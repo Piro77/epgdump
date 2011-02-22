@@ -1,0 +1,113 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.7	//
+AribToString	aribstr.c	/^int AribToString($/;"	f
+AribToStringInternal	aribstr.c	/^const DWORD AribToStringInternal(TCHAR *lpszDst, $/;"	f
+BYTE	aribstr.c	28;"	d	file:
+CAT_COUNT	epgdump.c	18;"	d	file:
+CODE_ADDITIONAL_SYMBOLS	aribstr.c	24;"	d	file:
+CODE_ALPHANUMERIC	aribstr.c	11;"	d	file:
+CODE_HIRAGANA	aribstr.c	12;"	d	file:
+CODE_JIS_KANJI_PLANE_1	aribstr.c	22;"	d	file:
+CODE_JIS_KANJI_PLANE_2	aribstr.c	23;"	d	file:
+CODE_JIS_X0201_KATAKANA	aribstr.c	21;"	d	file:
+CODE_KANJI	aribstr.c	10;"	d	file:
+CODE_KATAKANA	aribstr.c	13;"	d	file:
+CODE_MOSAIC_A	aribstr.c	14;"	d	file:
+CODE_MOSAIC_B	aribstr.c	15;"	d	file:
+CODE_MOSAIC_C	aribstr.c	16;"	d	file:
+CODE_MOSAIC_D	aribstr.c	17;"	d	file:
+CODE_PROP_ALPHANUMERIC	aribstr.c	18;"	d	file:
+CODE_PROP_HIRAGANA	aribstr.c	19;"	d	file:
+CODE_PROP_KATAKANA	aribstr.c	20;"	d	file:
+CODE_SET	aribstr.c	36;"	d	file:
+CODE_UNKNOWN	aribstr.c	9;"	d	file:
+CONTENT_TYPE	epgdump.c	/^}CONTENT_TYPE;$/;"	t	typeref:struct:_ContentTYPE	file:
+CalcCrc	ts.c	/^unsigned int CalcCrc(unsigned int crc, unsigned char *buf, int len) {$/;"	f
+Category	epgdump.c	/^char	Category[1024];$/;"	v
+ContentCatList	epgdump.c	/^static  CONTENT_TYPE	ContentCatList[CAT_COUNT] = {$/;"	v	file:
+DWORD	aribstr.c	30;"	d	file:
+DesignationDRCS	aribstr.c	/^const bool DesignationDRCS(const BYTE byIndexG, const BYTE byCode)$/;"	f
+DesignationGSET	aribstr.c	/^const bool DesignationGSET(const BYTE byIndexG, const BYTE byCode)$/;"	f
+GetEIT	epgdump.c	/^void	GetEIT(FILE *infile, FILE *outfile, SVT_CONTROL *svtcur, SECcache *secs, int count)$/;"	f
+GetSDT	epgdump.c	/^void	GetSDT(FILE *infile, SVT_CONTROL *svttop, SECcache *secs, int count)$/;"	f
+LockingShiftGL	aribstr.c	/^void LockingShiftGL(const BYTE byIndexG)$/;"	f
+LockingShiftGR	aribstr.c	/^void LockingShiftGR(const BYTE byIndexG)$/;"	f
+ProcessCharCode	aribstr.c	/^const DWORD ProcessCharCode(TCHAR *lpszDst, const WORD wCode, const CODE_SET CodeSet)$/;"	f
+ProcessEscapeSeq	aribstr.c	/^void ProcessEscapeSeq(const BYTE byCode)$/;"	f
+PutAlphanumericChar	aribstr.c	/^const DWORD PutAlphanumericChar(TCHAR *lpszDst, const WORD wCode)$/;"	f
+PutHiraganaChar	aribstr.c	/^const DWORD PutHiraganaChar(TCHAR *lpszDst, const WORD wCode)$/;"	f
+PutJisKatakanaChar	aribstr.c	/^const DWORD PutJisKatakanaChar(TCHAR *lpszDst, const WORD wCode)$/;"	f
+PutKanjiChar	aribstr.c	/^const DWORD PutKanjiChar(TCHAR *lpszDst, const WORD wCode)$/;"	f
+PutKatakanaChar	aribstr.c	/^const DWORD PutKatakanaChar(TCHAR *lpszDst, const WORD wCode)$/;"	f
+PutSymbolsChar	aribstr.c	/^const DWORD PutSymbolsChar(TCHAR *lpszDst, const WORD wCode)$/;"	f
+SECCOUNT	epgdump.c	140;"	d	file:
+STATION	epgdump.c	/^} STATION;$/;"	t	typeref:struct:_TAG_STATION	file:
+ServiceName	epgdump.c	/^char	ServiceName[1024];$/;"	v
+SingleShiftGL	aribstr.c	/^void SingleShiftGL(const BYTE byIndexG)$/;"	f
+TCHAR	aribstr.c	27;"	d	file:
+TEXT	aribstr.c	34;"	d	file:
+WORD	aribstr.c	29;"	d	file:
+_ContentTYPE	epgdump.c	/^typedef		struct	_ContentTYPE{$/;"	s	file:
+_T	aribstr.c	35;"	d	file:
+_TAG_STATION	epgdump.c	/^typedef struct _TAG_STATION$/;"	s	file:
+abCharSizeTable	aribstr.c	/^static const bool abCharSizeTable[] =$/;"	v	file:
+bool	aribstr.c	31;"	d	file:
+bsSta	epgdump.c	/^static STATION bsSta[] = {$/;"	v	file:
+bsSta	xmldata.c	/^static STATION bsSta[] = {$/;"	v	file:
+bsStaCount	epgdump.c	/^static int bsStaCount = sizeof(bsSta) \/ sizeof (STATION);$/;"	v	file:
+bsStaCount	xmldata.c	/^static int bsStaCount = sizeof(bsSta) \/ sizeof (STATION);$/;"	v	file:
+cd	epgdump.c	/^iconv_t	cd ;$/;"	v
+checkEEVTDitem	eit.c	/^int checkEEVTDitem(EEVTDitem *save, EEVTDitem *new, int descriptor_number) {$/;"	f
+checkcrc	ts.c	/^int checkcrc(SECcache *secs) {$/;"	f
+convertjis	aribstr.c	/^WORD convertjis(DWORD jiscode) {$/;"	f
+csSta	epgdump.c	/^static STATION csSta[] = {$/;"	v	file:
+csSta	xmldata.c	/^static STATION csSta[] = {$/;"	v	file:
+csStaCount	epgdump.c	/^static int csStaCount = sizeof(csSta) \/ sizeof (STATION);$/;"	v	file:
+csStaCount	xmldata.c	/^static int csStaCount = sizeof(csSta) \/ sizeof (STATION);$/;"	v	file:
+dumpEIT	eit.c	/^void dumpEIT(unsigned char *ptr, int serv_id, int original_network_id, int transport_stream_id, EIT_CONTROL *eittop)$/;"	f
+dumpSDT	sdt.c	/^void dumpSDT(unsigned char *ptr, SVT_CONTROL *top)$/;"	f
+english	epgdump.c	/^	char	*english ;$/;"	m	struct:_ContentTYPE	file:
+enqueue	eit.c	/^void	enqueue(EIT_CONTROL *top, EIT_CONTROL *eitptr)$/;"	f
+enqueue_sdt	sdt.c	/^void	enqueue_sdt(SVT_CONTROL *top, SVT_CONTROL *sdtptr)$/;"	f
+false	aribstr.c	33;"	d	file:
+getBit	util.c	/^int getBit(unsigned char *byte, int *pbit, int gbit) {$/;"	f
+getStr	util.c	/^void getStr(char *tostr, unsigned char *byte, int *pbit, int len) {$/;"	f
+japanese	epgdump.c	/^	char	*japanese ;$/;"	m	struct:_ContentTYPE	file:
+m_CodeG	aribstr.c	/^static int m_CodeG[4];$/;"	v	file:
+m_bIsEscSeqDrcs	aribstr.c	/^static	bool m_bIsEscSeqDrcs;$/;"	v	file:
+m_byEscSeqCount	aribstr.c	/^static	BYTE m_byEscSeqCount;$/;"	v	file:
+m_byEscSeqIndex	aribstr.c	/^static	BYTE m_byEscSeqIndex;$/;"	v	file:
+m_pLockingGL	aribstr.c	/^static int *m_pLockingGL;$/;"	v	file:
+m_pLockingGR	aribstr.c	/^static int *m_pLockingGR;$/;"	v	file:
+m_pSingleGL	aribstr.c	/^static int *m_pSingleGL;$/;"	v	file:
+main	epgdump.c	/^int main(int argc, char *argv[])$/;"	f
+name	epgdump.c	/^	char	*name;$/;"	m	struct:_TAG_STATION	file:
+onId	epgdump.c	/^	int		onId;		\/\/ TransportStreamID$/;"	m	struct:_TAG_STATION	file:
+ontv	epgdump.c	/^	char	*ontv;$/;"	m	struct:_TAG_STATION	file:
+parseContentDesc	eit.c	/^int parseContentDesc(unsigned char *data, ContentDesc *desc) {$/;"	f
+parseEEVTDhead	eit.c	/^int parseEEVTDhead(unsigned char *data, EEVTDhead *desc) {$/;"	f
+parseEEVTDitem	eit.c	/^int parseEEVTDitem(unsigned char *data, EEVTDitem *desc) {$/;"	f
+parseEEVTDtail	eit.c	/^int parseEEVTDtail(unsigned char *data, EEVTDtail *desc) {$/;"	f
+parseEITbody	eit.c	/^int parseEITbody(unsigned char *data, EITbody *b) {$/;"	f
+parseEIThead	eit.c	/^int parseEIThead(unsigned char *data, EIThead *h) {$/;"	f
+parseOTHERdesc	util.c	/^int parseOTHERdesc(unsigned char *data) {$/;"	f
+parseSDTbody	sdt.c	/^int parseSDTbody(unsigned char *data, SDTbody *b) {$/;"	f
+parseSDThead	sdt.c	/^int parseSDThead(unsigned char *data, SDThead *h) {$/;"	f
+parseSEVTdesc	eit.c	/^int parseSEVTdesc(unsigned char *data, SEVTdesc *desc) {$/;"	f
+parseSVCdesc	sdt.c	/^int parseSVCdesc(unsigned char *data, SVCdesc *desc) {$/;"	f
+parseSeriesDesc	eit.c	/^int parseSeriesDesc(unsigned char *data, SeriesDesc *desc) {$/;"	f
+readTS	ts.c	/^SECcache *readTS(FILE *in, SECcache secs[], int size) {$/;"	f
+searcheit	eit.c	/^EIT_CONTROL	*searcheit(EIT_CONTROL *top, int servid, int eventid)$/;"	f
+serachid	sdt.c	/^int		serachid(SVT_CONTROL *top, int service_id)$/;"	f
+subtitle	epgdump.c	/^char	subtitle[1024];$/;"	v
+svId	epgdump.c	/^	int		svId;		\/\/ ServiceID$/;"	m	struct:_TAG_STATION	file:
+svttop	epgdump.c	/^SVT_CONTROL	*svttop = NULL;$/;"	v
+timecmp	eit.c	/^void timecmp(int *thh, int *tmm, int *tss,$/;"	f
+title	epgdump.c	/^char	title[1024];$/;"	v
+true	aribstr.c	32;"	d	file:
+tsId	epgdump.c	/^	int		tsId;		\/\/ OriginalNetworkID$/;"	m	struct:_TAG_STATION	file:
+xmlspecialchars	epgdump.c	/^void	xmlspecialchars(char *str)$/;"	f
