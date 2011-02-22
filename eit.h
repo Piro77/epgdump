@@ -54,6 +54,38 @@ typedef struct _SEVTdesc {
 	char text[MAXSECLEN];
 } SEVTdesc;
 
+typedef struct _ComponentDesc {
+	int descriptor_tag;
+	int descriptor_length;
+	char reserved_future_use;
+	char stream_content;
+	int component_type;
+	int component_tag;
+	char ISO_639_language_code[3];
+	char content[MAXSECLEN];
+} ComponentDesc;
+
+
+typedef struct _AudioComponentDesc {
+        int descriptor_tag;
+        int descriptor_length;
+        char reserved_future_use;
+        char stream_content;
+        int component_type;
+        int component_tag;
+        int stream_type;
+        char simulcast_group_tag;
+        char ES_multi_lingual_flag;
+        char main_component_flag;
+        char quality_indicator;
+        char sampling_rate;
+        char reserved_future_use2;
+        char ISO_639_language_code[3];
+        char ISO_639_language_code2[3];
+        char content[MAXSECLEN];
+}AudioComponentDesc;
+
+
 typedef struct _ContentDesc {
 	int descriptor_tag;
 	int descriptor_length;
@@ -108,7 +140,7 @@ extern "C"{
 	int parseSeriesDesc(unsigned char *data, SeriesDesc *desc);
 
 	int parseEEVTDhead(unsigned char *data, EEVTDhead *desc) ;
-	int parseEEVTDitem(unsigned char *data, EEVTDitem *desc) ;
+	int parseEEVTDitem(unsigned char *data, EEVTDitem *desc, EIT_CONTROL *eitcur) ;
 	int parseEEVTDtail(unsigned char *data, EEVTDtail *desc) ;
 
 	void dumpEIT(unsigned char *data, int serv_id, int original_network_id, int transport_stream_id, EIT_CONTROL *eittop);

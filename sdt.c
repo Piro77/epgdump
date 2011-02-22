@@ -134,7 +134,7 @@ void dumpSDT(unsigned char *ptr, SVT_CONTROL *top)
 			svtptr->event_id = sdtb.service_id;
 			memcpy(svtptr->servicename, desc.service_name, strlen(desc.service_name));
 			enqueue_sdt(top, svtptr);
-#if 0
+#if DEBUG
 			printf("SDT=%s,%d,%x,%x,%x,%x,%x,%x,%x\n",
 				desc.service_name, sdtb.service_id, sdtb.reserved_future_use1,
 				sdtb.EIT_user_defined_flags, sdtb.EIT_schedule_flag, sdtb.EIT_present_following_flag,

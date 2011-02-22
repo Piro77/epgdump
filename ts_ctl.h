@@ -35,5 +35,9 @@ struct	_EIT_CONTROL{
 	int		ess;
 	char	*title ;			// タイトル
 	char	*subtitle ;			// サブタイトル
+	char	*extdesc;			// 拡張番組情報
+	char 	extdescflg;			// 拡張番組情報取得完了フラグ
+	char	video;				// 映像情報
+	char	audio;				// 音声情報
 };
 #endif
