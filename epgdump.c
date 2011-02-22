@@ -145,6 +145,9 @@ char	subtitle[1024];
 char	Category[1024];
 char	ServiceName[1024];
 
+/* prototype */
+extern int strrep(char *buf, char *mae, char *ato);
+
 void	xmlspecialchars(char *str)
 {
 	strrep(str, "&", "&amp;");

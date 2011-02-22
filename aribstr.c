@@ -39,7 +39,7 @@ static int m_CodeG[4];
 static int *m_pLockingGL;
 static int *m_pLockingGR;
 static int *m_pSingleGL;
-	
+
 static	BYTE m_byEscSeqCount;
 static	BYTE m_byEscSeqIndex;
 static	bool m_bIsEscSeqDrcs;
@@ -318,7 +318,7 @@ const DWORD PutKanjiChar(TCHAR *lpszDst, const WORD wCode)
 
 	fptr = code;
 	tptr = xcode;
-	iconv(cd, &fptr, &inbyte, &tptr, &outbyte);
+	iconv(cd, (char **)&fptr, &inbyte, &tptr, &outbyte);
 
 	iconv_close(cd);
 
@@ -622,23 +622,25 @@ void ProcessEscapeSeq(const BYTE byCode)
 void LockingShiftGL(const BYTE byIndexG)
 {
 	// LSx
-	m_pLockingGL = &m_CodeG[byIndexG];
+	m_pLockingGL = &m_CodeG[(int)byIndexG];
 }
 
 void LockingShiftGR(const BYTE byIndexG)
 {
 	// LSxR
-	m_pLockingGR = &m_CodeG[byIndexG];
+	m_pLockingGR = &m_CodeG[(int)byIndexG];
 }
 
 void SingleShiftGL(const BYTE byIndexG)
 {
 	// SSx
-	m_pSingleGL  = &m_CodeG[byIndexG];
+	m_pSingleGL  = &m_CodeG[(int)byIndexG];
 }
 
-const bool DesignationGSET(const BYTE byIndexG, const BYTE byCode)
+const bool DesignationGSET(const BYTE byIndexG_arg, const BYTE byCode)
 {
+	int byIndexG = (int)byIndexG_arg;
+
 	// Gのグラフィックセットを割り当てる
 	switch(byCode){
 	case 0x42U	: m_CodeG[byIndexG] = CODE_KANJI;				return true;	// Kanji
@@ -660,8 +662,10 @@ const bool DesignationGSET(const BYTE byIndexG, const BYTE byCode)
 	}
 }
 
-const bool DesignationDRCS(const BYTE byIndexG, const BYTE byCode)
+const bool DesignationDRCS(const BYTE byIndexG_arg, const BYTE byCode)
 {
+	int byIndexG = (int)byIndexG_arg;
+
 	// DRCSのグラフィックセットを割り当てる
 	switch(byCode){
 	case 0x40U	: m_CodeG[byIndexG] = CODE_UNKNOWN;				return true;	// DRCS-0

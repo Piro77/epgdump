@@ -28,7 +28,7 @@ typedef struct _EIThead {
 typedef struct _EITbody {
 	int event_id;
 	char start_time[5];
-	char duration[3];
+	unsigned char duration[3];
 	int running_status;
 	int free_CA_mode;
 	int descriptors_loop_length;
