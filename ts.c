@@ -69,6 +69,13 @@ retry:
 				boff = 12;
 				secs[ridx].seclen = getBit(&secs[ridx].cur.payload[secs[ridx].curlen], &boff, 12) + 3; // ヘッダ
 
+
+ 				if(secs[ridx].seclen > MAXSECLEN){
+ 					// セクションが MAXSECLEN より大きい時はこのセクションをスキップ
+ 					secs[ridx].cont = 0;
+ 					goto retry;
+ 				}
+  	
 				/*
 				  if(secs[ridx].seclen == 2334) {
 				  printf("aa");
@@ -226,6 +233,11 @@ retry:
 					/* 最初 セクション長を調べる */
 					boff = 12;
 					secs[i].seclen = getBit(secs[i].cur.payload, &boff, 12) + 3; // ヘッダ;
+					if(secs[i].seclen > MAXSECLEN){
+						/* セクション長が MAXSECLEN より長いときはこのセクションをスキップ */
+						secs[i].cont = 0;
+						goto retry;
+					}
 					/*
 					  if(secs[i].seclen == 2334) {
 					  printf("aa");

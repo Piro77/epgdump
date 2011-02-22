@@ -332,6 +332,10 @@ int main(int argc, char *argv[])
 		staCount = csStaCount;
 		act = 0 ;
 	}else{
+		if(infile == NULL){
+			fprintf(stderr, "Can't open file: %s\n", file);
+			return 1;
+		}
 		act = 1 ;
 		svttop = calloc(1, sizeof(SVT_CONTROL));
 		GetSDT(infile, svttop, secs, SECCOUNT);
