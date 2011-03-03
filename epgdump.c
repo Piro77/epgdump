@@ -24,7 +24,7 @@ typedef struct _TAG_STATION
 
 
 SVT_CONTROL	*svttop = NULL;
-#define		SECCOUNT	4
+#define		SECCOUNT	2
 char	title[1024];
 char	subtitle[1024];
 char	Category[1024];
@@ -44,6 +44,72 @@ void	xmlspecialchars(char *str)
 }
 
 
+void	GetInfoToCsv(FILE *infile,FILE *outfile,SECcache *secs,int count)
+{
+	SVT_CONTROL	*svtcur ;
+	EIT_CONTROL	*eitcur ;
+	int 		pid;
+	SECcache  *bsecs;
+	int		sdtflg;
+	int ret;
+
+	sdtflg=0;
+
+	while((bsecs = readTS(infile, secs, count)) != NULL) {
+		pid = bsecs->pid & 0xFF;
+		switch (pid) {
+			case 0x11: // SDT
+				if (sdtflg==0) { 
+					sdtflg=1;
+					dumpSDT(bsecs->buf, svttop);
+
+					svtcur = svttop->next;
+					while(svtcur) {
+						if (svtcur->eit == NULL) {
+							svtcur->eit = calloc(1, sizeof(EIT_CONTROL));
+						}
+						svtcur = svtcur->next;
+					}
+
+				}
+				break;
+			case 0x12: // EIT
+				if (sdtflg) {
+					ret = dumpEIT2(bsecs->buf,svttop);
+					if (ret == 0) sdtflg = 0;
+				}
+				break;
+		}
+
+	}
+	svtcur=svttop->next;
+	while(svtcur != NULL) {
+		eitcur = svtcur->eit;
+		while(eitcur != NULL){
+			if(!eitcur->servid){
+				eitcur = eitcur->next ;
+				continue ;
+			}
+			fprintf(outfile,"%s,0x%x,0x%x,0x%x",svtcur->servicename,svtcur->original_network_id,svtcur->transport_stream_id,svtcur->event_id);
+			fprintf(outfile,"0x%x,0x%x,%s,%s,%04d/%02d/%02d %02d:%02d:%02d,%02d:%02d:%02d,%s,%s,%s,0x%x,%s,0x%x,%s\n",
+					eitcur->event_id,
+					eitcur->content_type,
+					ContentCatList[(eitcur->content_type >> 4)].japanese,
+					getContentCat(eitcur->content_type),
+					eitcur->yy,eitcur->mm,eitcur->dd,eitcur->hh,eitcur->hm,eitcur->ss,
+					eitcur->ehh,eitcur->emm,eitcur->ess,
+					eitcur->title,
+					eitcur->subtitle,
+					eitcur->extdesc?eitcur->extdesc:"",
+					(unsigned char)eitcur->video,
+					getVideoComponentDescStr((unsigned char)eitcur->video),
+					eitcur->audio,
+					getAudioComponentDescStr(eitcur->audio));
+			eitcur=eitcur->next;
+		}
+		svtcur=svtcur->next;
+	}
+}
 
 void	GetSDT(FILE *infile, SVT_CONTROL *svttop, SECcache *secs, int count)
 {
@@ -99,18 +165,8 @@ void	GetEIT(FILE *infile, FILE *outfile, STATION *psta, SECcache *secs, int coun
 		if (eitcur->subtitle) strcpy(subtitle, eitcur->subtitle);
 		xmlspecialchars(subtitle);
 
-		if (eitcur->extdesc) {
-			extdesc = malloc((strlen(eitcur->extdesc)+1)*2);
-			strcpy(extdesc, eitcur->extdesc);
-			xmlspecialchars(extdesc);
-		}
-		else {
-			extdesc = NULL;
-		}
-
 		memset(Category, '\0', sizeof(Category));
-		sprintf(Category,"%s %s",ContentCatList[(eitcur->content_type >> 4)].japanese,getContentCat(eitcur->content_type));
-		//strcpy(Category, ContentCatList[(eitcur->content_type >> 4)].japanese);
+		strcpy(Category, ContentCatList[(eitcur->content_type >> 4)].japanese);
 		xmlspecialchars(Category);
 
 		tl.tm_sec = eitcur->ss ;
@@ -140,9 +196,6 @@ void	GetEIT(FILE *infile, FILE *outfile, STATION *psta, SECcache *secs, int coun
 				cstarttime, cendtime, psta->ontv);
 		fprintf(outfile, "    <title lang=\"ja_JP\">%s</title>\n", title);
 		fprintf(outfile, "    <desc lang=\"ja_JP\">%s</desc>\n", subtitle);
-		if (extdesc) {
-			fprintf(outfile, "    <desc lang=\"ja_JP1\">%s</desc>\n", extdesc);
-		}
 		fprintf(outfile, "    <category lang=\"ja_JP\">%s</category>\n", Category);
 		fprintf(outfile, "    <category lang=\"en\">%s</category>\n", ContentCatList[(eitcur->content_type >> 4)].english);
 		fprintf(outfile, "  </programme>\n");
@@ -159,7 +212,7 @@ void	GetEIT(FILE *infile, FILE *outfile, STATION *psta, SECcache *secs, int coun
 					eitcur->table_id, eitcur->event_id,
 					eitcur->yy, eitcur->mm, eitcur->dd,
 					eitcur->hh, eitcur->hm, eitcur->ss,
-					eitcur->ehh, eitcur->emm, eitcur->ess,
+					eitcur->ehh, eitcur->emm, eitcur->.ss,
 					eitcur->title, eitcur->subtitle,
 					ContentCatList[(eitcur->content_type >> 4)].japanese,
 					ContentCatList[(eitcur->content_type >> 4)].english);
@@ -197,9 +250,11 @@ int main(int argc, char *argv[])
 	/* 興味のあるpidを指定 */
 	memset(secs, 0,  sizeof(SECcache) * SECCOUNT);
 	secs[0].pid = 0x11;
-	secs[1].pid = 0x12;
+	secs[1].pid = 0x12; 
+	/*
 	secs[2].pid = 0x26;
 	secs[3].pid = 0x27;
+	*/
 
 	if(argc == 4){
 		arg_onTV = argv[1];
@@ -213,7 +268,7 @@ int main(int argc, char *argv[])
 			outclose = 1;
 		}
 	}else{
-		fprintf(stdout, "Usage : %s {/BS|/CS} <tsFile> <outfile>\n", argv[0]);
+		fprintf(stdout, "Usage : %s {/BS|/CS|csv} <tsFile> <outfile>\n", argv[0]);
 		fprintf(stdout, "Usage : %s <ontvcode> <tsFile> <outfile>\n", argv[0]);
 		fprintf(stdout, "\n");
 		fprintf(stdout, "  ontvcode   Channel identifier (ex. ****.ontvjapan.com)\n");
@@ -223,6 +278,7 @@ int main(int argc, char *argv[])
 		fprintf(stdout, "  /CS        CS mode\n");
 		fprintf(stdout, "               This mode reads the data of two or more CS TV stations\n");
 		fprintf(stdout, "               from one TS data.\n");
+		fprintf(stdout, "  csv        csv  output mode\n");
 		return 0;
 	}
 
@@ -234,6 +290,17 @@ int main(int argc, char *argv[])
 		pStas = csSta;
 		staCount = csStaCount;
 		act = 0 ;
+	}else if(strcmp(arg_onTV, "csv") == 0){
+		if(infile == NULL){
+			fprintf(stderr, "Can't open file: %s\n", file);
+			return 1;
+		}
+		act = 1 ;
+		svttop = calloc(1, sizeof(SVT_CONTROL));
+		GetInfoToCsv(infile,outfile, secs, SECCOUNT);
+		if(inclose) fclose(infile);
+		if(outclose) fclose(outfile);
+		exit(0);
 	}else{
 		if(infile == NULL){
 			fprintf(stderr, "Can't open file: %s\n", file);

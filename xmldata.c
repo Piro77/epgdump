@@ -264,7 +264,24 @@ static char *getVideoComponentDescStr(int cat) {
 		case 0xe2: ret = "映像1080p(1125p)、アスペクト比16:9 パンベクトルあり"; break;
 		case 0xe3: ret = "映像1080p(1125p)、アスペクト比16:9 パンベクトルなし"; break;
 		case 0xe4: ret = "映像1080p(1125p)、アスペクト比 > 16:9"; break;
+		default:
+			   ret = "映像不明";
 	}
 	return ret;
 }
+/* 音声コンポーネント種別 */
+static char *getAudioComponentDescStr(int cat) {
+	char *ret;
+	ret=NULL;
+	switch (cat) {
+		case 0x01: ret = "シングルモノ"; break;
+		case 0x02: ret = "デュアルモノ"; break;
+		case 0x03: ret = "ステレオ"; break;
+		case 0x09: ret = "サラウンドステレオ"; break;
+		default:
+			   ret = "音声不明";
+	}
+	return ret;
+}
+
 #endif

@@ -4,6 +4,8 @@
 #include	"util.h"
 
 typedef	struct	_SVT_CONTROL	SVT_CONTROL;
+typedef	struct	_EIT_CONTROL	EIT_CONTROL;
+
 struct	_SVT_CONTROL{
 	SVT_CONTROL	*next ;
 	SVT_CONTROL	*prev ;
@@ -11,9 +13,9 @@ struct	_SVT_CONTROL{
 	int		original_network_id ;			// OriginalNetworkID
 	int		transport_stream_id ;			// TransporrtStreamID
 	char	servicename[MAXSECLEN] ;		// サービス名
+	EIT_CONTROL	*eit;				// EIT テーブル
 };
 
-typedef	struct	_EIT_CONTROL	EIT_CONTROL;
 struct	_EIT_CONTROL{
 	EIT_CONTROL	*next ;
 	EIT_CONTROL	*prev ;
@@ -36,7 +38,6 @@ struct	_EIT_CONTROL{
 	char	*title ;			// タイトル
 	char	*subtitle ;			// サブタイトル
 	char	*extdesc;			// 拡張番組情報
-	char 	extdescflg;			// 拡張番組情報取得完了フラグ
 	char	video;				// 映像情報
 	char	audio;				// 音声情報
 };

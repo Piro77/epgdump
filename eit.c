@@ -9,6 +9,7 @@ char		*subtitle_cnv_str[] = {
 };
 static void timecmp(int *,int *,int *,
 					int, int, int);
+void append_desc(EIT_CONTROL* eittop, int service_id, int event_id, EEVTDitem* eevtitem);
 
 int parseEIThead(unsigned char *data, EIThead *h) {
 	int boff = 0;
@@ -264,6 +265,9 @@ int parseSeriesDesc(unsigned char *data, SeriesDesc *desc) {
 	desc->last_episode_number = getBit(data, &boff, 12);
 
 	getStr(desc->series_name_char, data, &boff, desc->descriptor_length - 8);
+#ifdef DEBUG1
+	printf("SERI [%d] [%s]\n",desc->repeat_label,desc->series_name_char);
+#endif
 	return desc->descriptor_length + 2;
 }
 
@@ -295,9 +299,11 @@ int parseEEVTDitem(unsigned char *data, EEVTDitem *desc,EIT_CONTROL *eitcur) {
 	memset(desc, 0, sizeof(EEVTDitem));
 
 	desc->item_description_length = getBit(data, &boff, 8);
+	memset(desc->item_description, 0, MAXSECLEN);
 	getStr(desc->item_description, data, &boff, desc->item_description_length);
 
 	desc->item_length = getBit(data, &boff, 8);
+	memset(desc->item, 0, MAXSECLEN);
 	memcpy(desc->item, data + (boff / 8), desc->item_length);
 	/* getStr(desc->item, data, &boff, desc->item_length); */
 #ifdef DEBUG
@@ -306,7 +312,7 @@ int parseEEVTDitem(unsigned char *data, EEVTDitem *desc,EIT_CONTROL *eitcur) {
 	tmpbuf = malloc(1024*1024);
 	getStr(tmpbuf,data,&boff,desc->item_length);
 	printf("desc[%d][%s]\nitem[%d]strlenitem[%d]\n  [%s]\n",desc->item_description_length,desc->item_description,desc->item_length,strlen(tmpbuf),tmpbuf);
-	if (eitcur != NULL && eitcur->extdescflg == 0)  {
+	if (eitcur != NULL )  {
 	if (eitcur->extdesc == NULL) {
 		len = strlen(desc->item_description) + 2 + strlen(tmpbuf);
 		eitcur->extdesc = malloc(len);
@@ -343,6 +349,7 @@ int parseEEVTDtail(unsigned char *data, EEVTDtail *desc) {
 	memset(desc, 0, sizeof(EEVTDtail));
 
 	desc->text_length = getBit(data, &boff, 8);
+	memset(desc->text, 0, MAXSECLEN);
 	getStr(desc->text, data, &boff, desc->text_length);
 
 	return desc->text_length + 1;
@@ -356,6 +363,7 @@ int checkEEVTDitem(EEVTDitem *save, EEVTDitem *new, int descriptor_number) {
 	if(new == NULL) { /* 最後のチェック*/
 		if(save->item_length != 0) {
 			swap = *save;
+			memset(save->item,0,MAXSECLEN);
 			getStr(save->item, (unsigned char*)swap.item, &boff, swap.item_length);
 			return 1;
 		} else {
@@ -373,6 +381,7 @@ int checkEEVTDitem(EEVTDitem *save, EEVTDitem *new, int descriptor_number) {
 		if(save->item_length != 0) {
 			/* 退避済みがあり */
 			swap = *save;
+			memset(save->item,0,MAXSECLEN);
 			getStr(save->item, (unsigned char*)swap.item, &boff, swap.item_length);
 			swap = *new;
 			*new = *save;
@@ -523,7 +532,7 @@ void dumpEIT(unsigned char *ptr, int serv_id, int original_network_id, int trans
 
 	EEVTDitem save_eevtitem;
 
-	EIT_CONTROL	*cur ;
+	EIT_CONTROL	*cur = NULL;
 
 	int len = 0;
 	int loop_len = 0;
@@ -544,7 +553,7 @@ void dumpEIT(unsigned char *ptr, int serv_id, int original_network_id, int trans
 		memset(&save_eevtitem, 0, sizeof(EEVTDitem));
 
 		len = parseEITbody(ptr, &eitb);
-		cur = searcheit(eittop, eith.service_id, eitb.event_id);
+
 		ptr += len;
 		loop_len -= len;
     
@@ -553,16 +562,15 @@ void dumpEIT(unsigned char *ptr, int serv_id, int original_network_id, int trans
 		loop_blen = eitb.descriptors_loop_length;
 		loop_len -= loop_blen;
 		while(loop_blen > 0) {
-
-#ifdef DEBUG
 			unsigned char desctag;
 			int sboff;
 			ComponentDesc componentDesc;
 			AudioComponentDesc audioComponentDesc;
 			sboff=0;
 			desctag = getBit(ptr,&sboff,8);
+#ifdef DEBUG
 			printf("Event 0x%x desctag [0x%x] savelen %d\n",eitb.event_id,desctag,save_eevtitem.item_length);
-
+#endif
 			switch (desctag) {
 				case 0x50:
 					len = parseComponentDesc(ptr, &componentDesc);
@@ -573,7 +581,6 @@ void dumpEIT(unsigned char *ptr, int serv_id, int original_network_id, int trans
 				default:
 					break;
 			}
-#endif
 
 			len = parseSEVTdesc(ptr, &sevtd);
 			if(len > 0) {
@@ -618,8 +625,6 @@ void dumpEIT(unsigned char *ptr, int serv_id, int original_network_id, int trans
 					cur->table_id = eith.table_id ;
 					enqueue(eittop, cur);
 				}
-				else
-					cur->extdescflg = 1;
 			} else {
 				len = parseEEVTDhead(ptr, &eevthead);
 
@@ -656,11 +661,7 @@ void dumpEIT(unsigned char *ptr, int serv_id, int original_network_id, int trans
 										strlen(eevtitem.item),
 										eevtitem.item);
 #endif
-						}
-						else
-						{
-
-
+							append_desc(eittop,eith.service_id,eitb.event_id,&eevtitem);
 						}
 					}
 
@@ -748,12 +749,43 @@ void dumpEIT(unsigned char *ptr, int serv_id, int original_network_id, int trans
 						save_eevtitem.item_description,
 						save_eevtitem.item);
 #endif
+			append_desc(eittop,eith.service_id,eitb.event_id,&save_eevtitem);
 		}
 	}
 
 	return;
 }
 
+void append_desc(EIT_CONTROL* eittop, int service_id, int event_id, EEVTDitem* eevtitem) {
+	EIT_CONTROL *cur;
+	int str_alen = 0;
+
+	cur = searcheit(eittop, service_id, event_id);
+	if (cur == NULL) {
+		return;
+	}
+
+	if ( cur->extdesc ) {
+		str_alen = strlen( cur->extdesc );
+	}
+	else {
+		str_alen = 0;
+	}
+	//eevtitem->item_description_length = strlen(eevtitem->item_description);
+	//eevtitem->item_length = strlen(eevtitem->item);
+	cur->extdesc = realloc(cur->extdesc, str_alen + eevtitem->item_description_length + eevtitem->item_length + 1000);
+	if ( !str_alen ) *cur->extdesc = '\0';
+
+	if ( eevtitem->item_description_length && !strstr(cur->extdesc, eevtitem->item_description) ) {
+		if (str_alen > 0) strcat(cur->extdesc + str_alen, "　");
+		strcat(cur->extdesc, eevtitem->item_description);
+	}
+
+	if ( eevtitem->item_length && !strstr(cur->extdesc, eevtitem->item) ) {
+		strcat(cur->extdesc + str_alen, "　");
+		strcat(cur->extdesc, eevtitem->item);
+	}
+}
 void timecmp(int *thh, int *tmm, int *tss,
 			 int dhh, int dmm, int dss) {
 
@@ -772,3 +804,162 @@ void timecmp(int *thh, int *tmm, int *tss,
 	*thh += dhh;
 
 }
+int dumpEIT2(unsigned char *ptr, SVT_CONTROL *svttop)
+{
+	EIThead  eith;
+	EITbody  eitb;
+	SEVTdesc sevtd;
+
+	EEVTDhead eevthead;
+	EEVTDitem eevtitem;
+	EEVTDtail eevttail;
+
+	EEVTDitem save_eevtitem;
+
+	EIT_CONTROL	*cur ;
+	EIT_CONTROL	*eittop;
+	SVT_CONTROL	*svtcur;
+
+	int len = 0;
+	int loop_len = 0;
+	int loop_blen = 0;
+	int loop_elen = 0;
+
+	int ehh, emm, ess;
+
+	/* EIT */
+	len = parseEIThead(ptr, &eith); 
+	/* EIT ヘッダから、どのSVTのEIT情報か特定する */
+	svtcur=svttop->next;
+	eittop = NULL;
+	while(svtcur) {
+        	if ((eith.transport_stream_id == svtcur->transport_stream_id) &&
+	    	    (eith.original_network_id == svtcur->original_network_id) &&
+		    (eith.service_id          == svtcur->event_id)) {
+			eittop = svtcur->eit;
+			break;
+		}
+		svtcur = svtcur->next;
+	}
+	if (eittop == NULL) {
+		// 別のストリーム？？
+		return 0;
+	}
+	ptr += len;
+	loop_len = eith.section_length - (len - 3 + 4); // 3は共通ヘッダ長 4はCRC
+	while(loop_len > 0) {
+		/* 連続する拡張イベントは、漢字コードが泣き別れして
+		   分割されるようだ。連続かどうかは、item_description_lengthが
+		   設定されているかどうかで判断できるようだ。 */
+		memset(&save_eevtitem, 0, sizeof(EEVTDitem));
+
+		len = parseEITbody(ptr, &eitb);
+
+		ehh = eitb.hh;
+		emm = eitb.hm;
+		ess = eitb.ss;
+
+		timecmp(&ehh, &emm, &ess, eitb.dhh, eitb.dhm, eitb.dss);
+		cur = searcheit(eittop, eith.service_id, eitb.event_id);
+
+		ptr += len;
+		loop_len -= len;
+    
+		loop_blen = eitb.descriptors_loop_length;
+		loop_len -= loop_blen;
+		while(loop_blen > 0) {
+			unsigned char desctag;
+			int sboff;
+			ContentDesc contentDesc;
+			ComponentDesc componentDesc;
+			AudioComponentDesc audioComponentDesc;
+			sboff=0;
+			desctag = getBit(ptr,&sboff,8);
+#ifdef DEBUG
+			printf("Event 0x%x desctag [0x%x] savelen %d\n",eitb.event_id,desctag,save_eevtitem.item_length);
+#endif
+			switch (desctag) {
+				case 0x50:
+					len = parseComponentDesc(ptr, &componentDesc);
+					if (cur) cur->video = componentDesc.component_type;
+					break;
+				case 0xC4:
+					len = parseAudioComponentDesc(ptr, &audioComponentDesc);
+					if (cur) cur->audio = audioComponentDesc.component_type;
+					break;
+				default:
+					break;
+			}
+
+			len = parseSEVTdesc(ptr, &sevtd);
+			if(len > 0) {
+				if(cur == NULL){
+					cur = calloc(1, sizeof(EIT_CONTROL));
+					cur->event_id = eitb.event_id ;
+					cur->servid = eith.service_id ;
+					cur->title = calloc(1, (strlen(sevtd.event_name) + 1));
+					memcpy(cur->title, sevtd.event_name, strlen(sevtd.event_name));
+					cur->subtitle = calloc(1, (strlen(sevtd.text) + 1));
+					memcpy(cur->subtitle, sevtd.text, strlen(sevtd.text));
+					cur->yy = eitb.yy;
+					cur->mm = eitb.mm;
+					cur->dd = eitb.dd;
+					cur->hh = eitb.hh;
+					cur->hm = eitb.hm;
+					cur->ss = eitb.ss;
+					cur->ehh = eitb.dhh;
+					cur->emm = eitb.dhm;
+					cur->ess = eitb.dss ;
+					cur->table_id = eith.table_id ;
+					enqueue(eittop, cur);
+				}
+			} else {
+				len = parseEEVTDhead(ptr, &eevthead);
+				if(len > 0) {
+					ptr += len;
+					loop_blen -= len;
+
+					loop_elen = eevthead.length_of_items;
+					loop_len -= loop_elen;
+					while(loop_elen > 0) {
+						len = parseEEVTDitem(ptr, &eevtitem,cur);
+
+						ptr += len;
+						loop_elen -= len;
+						loop_blen -= len;
+
+						if(checkEEVTDitem(&save_eevtitem, &eevtitem, 
+										  eevthead.descriptor_number)) {
+							append_desc(eittop,eith.service_id,eitb.event_id,&eevtitem);
+						}
+					}
+
+					len = parseEEVTDtail(ptr, &eevttail);
+				} else {
+					len = parseContentDesc(ptr, &contentDesc);
+					if (len > 0) {
+						if (cur) cur->content_type = (unsigned char)(contentDesc.content[0]);
+					} else {
+						SeriesDesc seriesDesc;
+						len = parseSeriesDesc(ptr, &seriesDesc);
+						if (len > 0) {
+						} else {
+							len = parseOTHERdesc(ptr);
+						}
+					}
+				}
+				
+			}
+			ptr += len;
+			loop_blen -= len;
+		}
+		/* 最後のブレークチェック */
+    
+		if(checkEEVTDitem(&save_eevtitem, NULL, 0)) {
+			append_desc(eittop,eith.service_id,eitb.event_id,&save_eevtitem);
+		}
+	}
+
+	return 1;
+}
+
