@@ -40,5 +40,6 @@ struct	_EIT_CONTROL{
 	char	*extdesc;			// 拡張番組情報
 	char	video;				// 映像情報
 	char	audio;				// 音声情報
+	char	*multiaudio;			// 二ヶ国語
 };
 #endif

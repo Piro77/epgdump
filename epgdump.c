@@ -90,8 +90,8 @@ void	GetInfoToCsv(FILE *infile,FILE *outfile,SECcache *secs,int count)
 				eitcur = eitcur->next ;
 				continue ;
 			}
-			fprintf(outfile,"%s,0x%x,0x%x,0x%x",svtcur->servicename,svtcur->original_network_id,svtcur->transport_stream_id,svtcur->event_id);
-			fprintf(outfile,"0x%x,0x%x,%s,%s,%04d/%02d/%02d %02d:%02d:%02d,%02d:%02d:%02d,%s,%s,%s,0x%x,%s,0x%x,%s\n",
+			fprintf(outfile,"%s,0x%x,0x%x,0x%x,",svtcur->servicename,svtcur->original_network_id,svtcur->transport_stream_id,svtcur->event_id);
+			fprintf(outfile,"0x%x,0x%x,%s,%s,%04d/%02d/%02d %02d:%02d:%02d,%02d:%02d:%02d,%s,%s,%s,0x%x,%s,0x%x,%s,%s\n",
 					eitcur->event_id,
 					eitcur->content_type,
 					ContentCatList[(eitcur->content_type >> 4)].japanese,
@@ -104,7 +104,8 @@ void	GetInfoToCsv(FILE *infile,FILE *outfile,SECcache *secs,int count)
 					(unsigned char)eitcur->video,
 					getVideoComponentDescStr((unsigned char)eitcur->video),
 					eitcur->audio,
-					getAudioComponentDescStr(eitcur->audio));
+					getAudioComponentDescStr(eitcur->audio),
+					eitcur->multiaudio?eitcur->multiaudio:"");
 			eitcur=eitcur->next;
 		}
 		svtcur=svtcur->next;

@@ -188,7 +188,7 @@ int parseAudioComponentDesc(unsigned char *data,AudioComponentDesc *desc) {
 	memcpy(desc->ISO_639_language_code, data + boff / 8, 3);
 	boff += 24;
 	if (desc->ES_multi_lingual_flag==0x01) {
-		memcpy(desc->ISO_639_language_code, data + boff / 8, 3);
+		memcpy(desc->ISO_639_language_code2, data + boff / 8, 3);
 		boff += 24;
 	}
 	memcpy(desc->content, data+(boff/8), desc->descriptor_length);
@@ -842,6 +842,9 @@ int dumpEIT2(unsigned char *ptr, SVT_CONTROL *svttop)
 		svtcur = svtcur->next;
 	}
 	if (eittop == NULL) {
+#ifdef DEBUG1
+		printf("Not Match %x  %x %x \n",eith.transport_stream_id,eith.original_network_id,eith.service_id);
+#endif
 		// 別のストリーム？？
 		return 0;
 	}
@@ -885,7 +888,18 @@ int dumpEIT2(unsigned char *ptr, SVT_CONTROL *svttop)
 					break;
 				case 0xC4:
 					len = parseAudioComponentDesc(ptr, &audioComponentDesc);
-					if (cur) cur->audio = audioComponentDesc.component_type;
+					if (cur) {
+						cur->audio = audioComponentDesc.component_type;
+						if (audioComponentDesc.ES_multi_lingual_flag==0x01) {
+							cur->multiaudio = calloc(1,20);
+							strcpy(cur->multiaudio,"二ヶ国語[");
+							strncat(cur->multiaudio,audioComponentDesc.ISO_639_language_code,3);
+							strcat(cur->multiaudio," ");
+							strncat(cur->multiaudio,audioComponentDesc.ISO_639_language_code2,3);
+							strcat(cur->multiaudio,"]");
+						}
+
+					}
 					break;
 				default:
 					break;
