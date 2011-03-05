@@ -38,7 +38,6 @@ void	xmlspecialchars(char *str)
 void	GetSDTEITInfo(FILE *infile,SECcache *secs,int count)
 {
 	SVT_CONTROL	*svtcur ;
-	EIT_CONTROL	*eitcur ;
 	int 		pid;
 	SECcache  *bsecs;
 	int		sdtflg;
@@ -203,12 +202,9 @@ int main(int argc, char *argv[])
 
 	FILE *infile = stdin;
 	FILE *outfile = stdout;
-	int		staCount ;
 	char *file;
 	int   inclose = 0;
 	int   outclose = 0;
-	SVT_CONTROL	*svtcur ;
-	SVT_CONTROL	*svtsave ;
 	SECcache   secs[SECCOUNT];
 
 	/* 興味のあるpidを指定 */
