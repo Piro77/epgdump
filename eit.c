@@ -194,7 +194,7 @@ int parseAudioComponentDesc(unsigned char *data,AudioComponentDesc *desc) {
 	memcpy(desc->content, data+(boff/8), desc->descriptor_length);
 	//getStr(desc->content, data, &boff, desc->descriptor_length);
 #ifdef DEBUG
-	printf("  Audio ");
+	printf("  Audio %s%s",desc->main_component_flag?"":"副",desc->main_component_flag?"":desc->ISO_639_language_code);
 	switch (desc->component_type) {
 		case 0x01:
 			printf("シングルモノ");
@@ -842,7 +842,7 @@ int dumpEIT2(unsigned char *ptr, SVT_CONTROL *svttop)
 		svtcur = svtcur->next;
 	}
 	if (eittop == NULL) {
-#ifdef DEBUG1
+#ifdef DEBUG
 		printf("Not Match %x  %x %x \n",eith.transport_stream_id,eith.original_network_id,eith.service_id);
 #endif
 		// 別のストリーム？？
@@ -925,6 +925,7 @@ int dumpEIT2(unsigned char *ptr, SVT_CONTROL *svttop)
 					cur->emm = eitb.dhm;
 					cur->ess = eitb.dss ;
 					cur->table_id = eith.table_id ;
+					cur->freeCA = eitb.free_CA_mode;
 					enqueue(eittop, cur);
 				}
 			} else {

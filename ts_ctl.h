@@ -41,5 +41,6 @@ struct	_EIT_CONTROL{
 	char	video;				// 映像情報
 	char	audio;				// 音声情報
 	char	*multiaudio;			// 二ヶ国語
+	char	freeCA;				// スクランブル
 };
 #endif

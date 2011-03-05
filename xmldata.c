@@ -1,6 +1,7 @@
 #ifndef XMLDATA_C
 #define XMLDATA_C 1
 
+#if 0
 static STATION bsSta[] = {
 	{ "NHK BS1", "3001.ontvjapan.com", 16625, 4, 101},
 	{ "NHK BS2", "3002.ontvjapan.com", 16625, 4, 102},
@@ -94,7 +95,7 @@ static STATION csSta[] = {
 };
 
 static int csStaCount = sizeof(csSta) / sizeof (STATION);
-
+#endif
 
 typedef		struct	_ContentTYPE{
 	char	*japanese ;
@@ -136,7 +137,6 @@ static char *getContentCat(int cat) {
 		case 0x08: ret = "報道特番"; break;
 		case 0x09: ret = "ローカル・地域"; break;
 		case 0x0a: ret = "交通"; break;
-		case 0x0f: ret = "その他"; break;
 		case 0x10: ret = "スポーツニュース"; break;
 		case 0x11: ret = "野球"; break;
 		case 0x12: ret = "サッカー"; break;
@@ -173,7 +173,6 @@ static char *getContentCat(int cat) {
 		case 0x48: ret = "民謡・邦楽"; break;
 		case 0x49: ret = "童謡・キッズ"; break;
 		case 0x4a: ret = "民族音楽・ワールドミュージック"; break;
-		case 0x4f: ret = "その他"; break;
 		case 0x50: ret = "クイズ"; break;
 		case 0x51: ret = "ゲーム"; break;
 		case 0x52: ret = "トークバラエティ"; break;
@@ -181,15 +180,12 @@ static char *getContentCat(int cat) {
 		case 0x54: ret = "音楽バラエティ"; break;
 		case 0x55: ret = "旅バラエティ"; break;
 		case 0x56: ret = "料理バラエティ"; break;
-		case 0x5f: ret = "その他"; break;
 		case 0x60: ret = "洋画"; break;
 		case 0x61: ret = "邦画"; break;
 		case 0x62: ret = "アニメ"; break;
-		case 0x6f: ret = "その他"; break;
 		case 0x70: ret = "国内アニメ"; break;
 		case 0x71: ret = "海外アニメ"; break;
 		case 0x72: ret = "特撮"; break;
-		case 0x7f: ret = "その他"; break;
 		case 0x80: ret = "社会・時事"; break;
 		case 0x81: ret = "歴史・紀行"; break;
 		case 0x82: ret = "自然・動物・環境"; break;
@@ -199,13 +195,11 @@ static char *getContentCat(int cat) {
 		case 0x86: ret = "スポーツ"; break;
 		case 0x87: ret = "ドキュメンタリー全般"; break;
 		case 0x88: ret = "インタビュー・討論"; break;
-		case 0x8f: ret = "その他"; break;
 		case 0x90: ret = "現代劇・新劇"; break;
 		case 0x91: ret = "ミュージカル"; break;
 		case 0x92: ret = "ダンス・バレエ"; break;
 		case 0x93: ret = "落語・演芸"; break;
 		case 0x94: ret = "歌舞伎・古典"; break;
-		case 0x9f: ret = "その他"; break;
 		case 0xa0: ret = "旅・釣り・アウトドア"; break;
 		case 0xa1: ret = "園芸・ペット・手芸"; break;
 		case 0xa2: ret = "音楽・美術・工芸"; break;
@@ -219,7 +213,6 @@ static char *getContentCat(int cat) {
 		case 0xaa: ret = "大学生・受験"; break;
 		case 0xab: ret = "生涯教育・資格"; break;
 		case 0xac: ret = "教育問題"; break;
-		case 0xaf: ret = "その他"; break;
 		case 0xb0: ret = "高齢者"; break;
 		case 0xb1: ret = "障害者"; break;
 		case 0xb2: ret = "社会福祉"; break;
@@ -227,7 +220,7 @@ static char *getContentCat(int cat) {
 		case 0xb4: ret = "手話"; break;
 		case 0xb5: ret = "文字（字幕）"; break;
 		case 0xb6: ret = "音声解説"; break;
-		case 0xbf: ret = "その他"; break;
+		default: ret="その他";
 	}
 	return ret;
 }
