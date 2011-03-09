@@ -209,9 +209,10 @@ int main(int argc, char *argv[])
 
 	/* 興味のあるpidを指定 */
 	memset(secs, 0,  sizeof(SECcache) * SECCOUNT);
-	secs[0].pid = 0x11;
-	secs[1].pid = 0x12; 
+	secs[0].pid = 0x11; /* SDT */
+	secs[1].pid = 0x12; /* EIT */
 	/*
+	secs[2].pid = 0x23; SDTT
 	secs[2].pid = 0x26;
 	secs[3].pid = 0x27;
 	*/
