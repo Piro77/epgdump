@@ -1,6 +1,6 @@
 PREFIX          = /usr/local
 TARGETS		= epgdump
-OBJ_TARGETS	= epgdump.o aribstr.o eit.o ts.o util.o sdt.o
+OBJ_TARGETS	= epgdump.o aribstr.o eit.o ts.o util.o sdt.o tdt.o
 HEDDERDEPEND	= eit.h sdt.h aribstr.h ts.h util.h xmldata.c
 
 LANG=C

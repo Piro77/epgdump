@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <sys/time.h>
 
 #include "aribstr.h"
 #include "util.h"
@@ -154,9 +155,9 @@ int getDurationSec(unsigned char *duration)
 	int hh,mm,ss;
 	char buf[24];
         if((duration[0] == 0xFF) && (duration[1] == 0xFF) && (duration[2] == 0xFF)){
-		// 終了未定　5分とみなす。
+		// 終了未定
                 hh = mm = ss = 0;
-		ss = 3600;
+		ss = -1;
         }else{
                 memset(buf, '\0', sizeof(buf));
 		sprintf(buf, "%x", duration[0]);
@@ -181,4 +182,12 @@ char *strTime(time_t tx,char *format)
 	tl = localtime(&tx);
 	strftime(tstr, (sizeof(tstr) - 1), format, tl);
 	return tstr;
+}
+
+double getTimeDiff(time_t tottime)
+{
+	struct timeval timeofday;
+
+	gettimeofday( &timeofday, NULL );
+	return (double)tottime-(double)timeofday.tv_sec+(double)timeofday.tv_usec*1e-6;
 }

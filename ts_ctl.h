@@ -5,6 +5,14 @@
 
 typedef	struct	_SVT_CONTROL	SVT_CONTROL;
 typedef	struct	_EIT_CONTROL	EIT_CONTROL;
+typedef struct	_CURRENTNEXT	CURRENTNEXT;
+
+struct _CURRENTNEXT {
+	short	event_id;
+	char	start_time[5];
+	char	duration[3];
+	char	running_status;
+};
 
 struct	_SVT_CONTROL{
 	SVT_CONTROL	*next ;
@@ -14,6 +22,8 @@ struct	_SVT_CONTROL{
 	int		transport_stream_id ;			// TransporrtStreamID
 	char	servicename[MAXSECLEN] ;		// サービス名
 	EIT_CONTROL	*eit;				// EIT テーブル
+	CURRENTNEXT	cnev[2];
+	char		haveeitschedule;		// EITスケジュールがあるか。
 };
 
 struct	_EIT_CONTROL{

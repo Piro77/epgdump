@@ -265,7 +265,7 @@ int parseSeriesDesc(unsigned char *data, SeriesDesc *desc) {
 	desc->last_episode_number = getBit(data, &boff, 12);
 
 	getStr(desc->series_name_char, data, &boff, desc->descriptor_length - 8);
-#ifdef DEBUG1
+#ifdef DEBUG
 	printf("SERI [%d] [%s]\n",desc->repeat_label,desc->series_name_char);
 #endif
 	return desc->descriptor_length + 2;
@@ -299,11 +299,9 @@ int parseEEVTDitem(unsigned char *data, EEVTDitem *desc,EIT_CONTROL *eitcur) {
 	memset(desc, 0, sizeof(EEVTDitem));
 
 	desc->item_description_length = getBit(data, &boff, 8);
-	memset(desc->item_description, 0, MAXSECLEN);
 	getStr(desc->item_description, data, &boff, desc->item_description_length);
 
 	desc->item_length = getBit(data, &boff, 8);
-	memset(desc->item, 0, MAXSECLEN);
 	memcpy(desc->item, data + (boff / 8), desc->item_length);
 	/* getStr(desc->item, data, &boff, desc->item_length); */
 #ifdef DEBUG
@@ -349,7 +347,6 @@ int parseEEVTDtail(unsigned char *data, EEVTDtail *desc) {
 	memset(desc, 0, sizeof(EEVTDtail));
 
 	desc->text_length = getBit(data, &boff, 8);
-	memset(desc->text, 0, MAXSECLEN);
 	getStr(desc->text, data, &boff, desc->text_length);
 
 	return desc->text_length + 1;
@@ -777,7 +774,10 @@ void append_desc(EIT_CONTROL* eittop, int service_id, int event_id, EEVTDitem* e
 	if ( !str_alen ) *cur->extdesc = '\0';
 
 	if ( eevtitem->item_description_length && !strstr(cur->extdesc, eevtitem->item_description) ) {
-		if (str_alen > 0) strcat(cur->extdesc + str_alen, "　");
+		if (str_alen > 0) {
+			strcat(cur->extdesc + str_alen, "　");
+		}
+		strrep(eevtitem->item_description,"　","");
 		strcat(cur->extdesc, eevtitem->item_description);
 	}
 
@@ -848,6 +848,9 @@ int dumpEIT2(unsigned char *ptr, SVT_CONTROL *svttop)
 		// 別のストリーム？？
 		return 0;
 	}
+#ifdef DEBUG
+			printf("SV  0x%x Table  [0x%x] \n",eith.service_id,eith.table_id);
+#endif
 	ptr += len;
 	loop_len = eith.section_length - (len - 3 + 4); // 3は共通ヘッダ長 4はCRC
 	while(loop_len > 0) {
@@ -857,6 +860,26 @@ int dumpEIT2(unsigned char *ptr, SVT_CONTROL *svttop)
 		memset(&save_eevtitem, 0, sizeof(EEVTDitem));
 
 		len = parseEITbody(ptr, &eitb);
+#ifdef DEBUG1
+	if (eith.table_id == 0x4e) {
+		if (eith.section_number < 2) {
+			if ((svtcur->cnev[eith.section_number].event_id  != (short)eitb.event_id) ||
+				(memcmp(svtcur->cnev[eith.section_number].start_time,eitb.start_time,5)!=0) ||
+				(memcmp(svtcur->cnev[eith.section_number].duration,eitb.duration,3)!=0)) {
+				// Event Changed
+				printf("sv[%x]%s [%x] [%s][%d] state %x\n",svtcur->event_id,eith.section_number?"next":"curr",
+				eitb.event_id,
+				strTime(getStartTime(eitb.start_time),"%Y/%m/%d %H:%M:%S"),
+				getDurationSec(eitb.duration),
+				eitb.running_status);
+				svtcur->cnev[eith.section_number].event_id = (short)eitb.event_id;
+				
+				memcpy(svtcur->cnev[eith.section_number].start_time,eitb.start_time,5);
+				memcpy(svtcur->cnev[eith.section_number].duration,eitb.duration,3);
+			}
+		}
+	}
+#endif
 
 		ehh = eitb.hh;
 		emm = eitb.hm;
@@ -927,6 +950,12 @@ int dumpEIT2(unsigned char *ptr, SVT_CONTROL *svttop)
 					cur->table_id = eith.table_id ;
 					cur->freeCA = eitb.free_CA_mode;
 					enqueue(eittop, cur);
+					if ((eith.table_id >= 0x50) && (!svtcur->haveeitschedule)) {
+						svtcur->haveeitschedule=1;
+#ifdef DEBUG
+						printf("HAVE SCH\n");
+#endif
+					}
 				}
 			} else {
 				len = parseEEVTDhead(ptr, &eevthead);

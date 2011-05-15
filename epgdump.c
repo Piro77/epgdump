@@ -15,7 +15,7 @@
 
 
 SVT_CONTROL	*svttop = NULL;
-#define		SECCOUNT	2
+#define		SECCOUNT	5
 char	title[1024];
 char	subtitle[1024];
 char	Category[1024];
@@ -69,6 +69,9 @@ void	GetSDTEITInfo(FILE *infile,SECcache *secs,int count)
 					if (ret == 0) sdtflg = 0;
 				}
 				break;
+			case 0x14: // TDT
+				ret = dumpTDT(bsecs->buf);
+				break;
 		}
 
 	}
@@ -80,6 +83,10 @@ void	dumpCSV(FILE *outfile)
 
 	svtcur=svttop->next;
 	while(svtcur != NULL) {
+		if (!svtcur->haveeitschedule) {
+			svtcur = svtcur->next;
+			continue;
+		}
 		eitcur = svtcur->eit;
 		while(eitcur != NULL){
 			if(!eitcur->servid){
@@ -127,6 +134,10 @@ void	dumpXML(FILE *outfile,char *bs_cs_grch)
 
 	svtcur=svttop->next;
 	while(svtcur != NULL) {
+		if (!svtcur->haveeitschedule) {
+			svtcur = svtcur->next;
+			continue;
+		}
 		memset(ServiceName, '\0', sizeof(ServiceName));
 		strcpy(ServiceName, svtcur->servicename);
 		xmlspecialchars(ServiceName);
@@ -138,6 +149,10 @@ void	dumpXML(FILE *outfile,char *bs_cs_grch)
 	}
 	svtcur=svttop->next;
 	while(svtcur != NULL) {
+		if (!svtcur->haveeitschedule) {
+			svtcur = svtcur->next;
+			continue;
+		}
 		eitcur = svtcur->eit;
 		while(eitcur != NULL){
 			if(!eitcur->servid){
@@ -211,6 +226,9 @@ int main(int argc, char *argv[])
 	memset(secs, 0,  sizeof(SECcache) * SECCOUNT);
 	secs[0].pid = 0x11; /* SDT */
 	secs[1].pid = 0x12; /* EIT */
+	secs[2].pid = 0x14; /* TDT */
+	secs[3].pid = 0x23; /* TDT */
+	secs[4].pid = 0x28; /* TDT */
 	/*
 	secs[2].pid = 0x23; SDTT
 	secs[2].pid = 0x26;
@@ -230,6 +248,8 @@ int main(int argc, char *argv[])
 	}else{
 		fprintf(stdout, "Usage : %s {/BS|/CS|csv} <tsFile> <outfile>\n", argv[0]);
 		fprintf(stdout, "Usage : %s <GR Channel> <tsFile> <outfile>\n", argv[0]);
+		fprintf(stdout, "Usage : %s check <device> <sid> <eventid>\n", argv[0]);
+		fprintf(stdout, "Usage : %s wait <device> <sid> <eventid>\n", argv[0]);
 		fprintf(stdout, "\n");
 		fprintf(stdout, "  GR Channel Channel identifier (ex. 27)\n");
 		fprintf(stdout, "  /BS        BS mode\n");
@@ -239,12 +259,17 @@ int main(int argc, char *argv[])
 		fprintf(stdout, "               This mode reads the data of two or more CS TV stations\n");
 		fprintf(stdout, "               from one TS data.\n");
 		fprintf(stdout, "  csv        csv  output mode\n");
+		fprintf(stdout, "  check      check event\n");
+		fprintf(stdout, "  wait       wait  event\n");
 		return 0;
 	}
 
 	if(infile == NULL){
 		fprintf(stderr, "Can't open file: %s\n", file);
 		return 1;
+	}
+
+	if(((strcmp(argv[1], "check") == 0)||(strcmp(argv[1],"wait"))==0)){
 	}
 
 	svttop = calloc(1, sizeof(SVT_CONTROL));
@@ -258,7 +283,6 @@ int main(int argc, char *argv[])
 		dumpCSV(outfile);
 	}else{
 		dumpXML(outfile,argv[1]);
-
 	}
 	if(inclose) fclose(infile);
 	if(outclose) fclose(outfile);
