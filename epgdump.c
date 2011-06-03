@@ -15,7 +15,7 @@
 
 
 SVT_CONTROL	*svttop = NULL;
-#define		SECCOUNT	5
+#define		SECCOUNT	6
 char	title[1024];
 char	subtitle[1024];
 char	Category[1024];
@@ -48,6 +48,10 @@ void	GetSDTEITInfo(FILE *infile,SECcache *secs,int count)
 	while((bsecs = readTS(infile, secs, count)) != NULL) {
 		pid = bsecs->pid & 0xFF;
 		switch (pid) {
+			case 0x10:  //NIT
+				ret = dumpNIT(bsecs->buf);
+				break;
+
 			case 0x11: // SDT
 				if (sdtflg==0) { 
 					sdtflg=1;
@@ -81,6 +85,13 @@ void	dumpCSV(FILE *outfile)
 	SVT_CONTROL	*svtcur ;
 	EIT_CONTROL	*eitcur ;
 
+#ifdef DEBUG1
+	svtcur=svttop->next;
+	while(svtcur != NULL) {
+			printf("%s,0x%x,0x%x,%d\n",svtcur->servicename,svtcur->original_network_id,svtcur->transport_stream_id,svtcur->event_id);
+			svtcur = svtcur->next;
+	}
+#endif
 	svtcur=svttop->next;
 	while(svtcur != NULL) {
 		if (!svtcur->haveeitschedule) {
@@ -93,7 +104,7 @@ void	dumpCSV(FILE *outfile)
 				eitcur = eitcur->next ;
 				continue ;
 			}
-			fprintf(outfile,"%s,0x%x,0x%x,0x%x,",svtcur->servicename,svtcur->original_network_id,svtcur->transport_stream_id,svtcur->event_id);
+			fprintf(outfile,"%s,0x%x,0x%x,%d,",svtcur->servicename,svtcur->original_network_id,svtcur->transport_stream_id,svtcur->event_id);
 			fprintf(outfile,"0x%x,0x%x,%s,%s,%04d/%02d/%02d %02d:%02d:%02d,%02d:%02d:%02d,%s,%s,%s,0x%x,%s,0x%x,%s,%s,%s\n",
 					eitcur->event_id,
 					eitcur->content_type,
@@ -229,6 +240,7 @@ int main(int argc, char *argv[])
 	secs[2].pid = 0x14; /* TDT */
 	secs[3].pid = 0x23; /* TDT */
 	secs[4].pid = 0x28; /* TDT */
+	secs[5].pid = 0x10; /* NIT */
 	/*
 	secs[2].pid = 0x23; SDTT
 	secs[2].pid = 0x26;

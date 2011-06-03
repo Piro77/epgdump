@@ -488,6 +488,9 @@ void	enqueue(EIT_CONTROL *top, EIT_CONTROL *eitptr)
 					cur->prev->next = eitptr ;
 					eitptr->prev = cur->prev ;
 				}
+				else {
+					top->next = eitptr;
+				}
 				cur->prev = eitptr ;
 				eitptr->next = cur ;
 				conv_title_subtitle(eitptr);

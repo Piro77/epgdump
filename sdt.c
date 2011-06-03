@@ -60,7 +60,7 @@ int parseSVCdesc(unsigned char *data, SVCdesc *desc) {
 
 	return desc->descriptor_length + 2;
 }
-int		serachid(SVT_CONTROL *top, int service_id)
+int		searchid(SVT_CONTROL *top, int service_id)
 {
 	SVT_CONTROL	*cur = top ;
 	while(cur != NULL){
@@ -87,6 +87,10 @@ void	enqueue_sdt(SVT_CONTROL *top, SVT_CONTROL *sdtptr)
 			if(cur->prev != NULL){
 				cur->prev->next = sdtptr ;
 				sdtptr->prev = cur->prev ;
+			}
+			else {
+				/* XXX why???  */
+				top->next = sdtptr;
 			}
 			cur->prev = sdtptr ;
 			sdtptr->next = cur ;
@@ -125,7 +129,7 @@ void dumpSDT(unsigned char *ptr, SVT_CONTROL *top)
 		loop_len -= len;
 		parseSVCdesc(ptr, &desc);
 
-		rc = serachid(top, sdtb.service_id);
+		rc = searchid(top, sdtb.service_id);
 		if(rc == 0){
 			svtptr = calloc(1, sizeof(SVT_CONTROL));
 			svtptr->event_id = sdtb.service_id;
