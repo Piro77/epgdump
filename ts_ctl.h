@@ -17,13 +17,14 @@ struct _CURRENTNEXT {
 struct	_SVT_CONTROL{
 	SVT_CONTROL	*next ;
 	SVT_CONTROL	*prev ;
-	int		event_id ;			// イベントID
+	int		event_id ;				// イベントID
 	int		original_network_id ;			// OriginalNetworkID
 	int		transport_stream_id ;			// TransporrtStreamID
 	char	servicename[MAXSECLEN] ;		// サービス名
 	EIT_CONTROL	*eit;				// EIT テーブル
 	CURRENTNEXT	cnev[2];
 	char		haveeitschedule;		// EITスケジュールがあるか。
+	int		frequency;
 };
 
 struct	_EIT_CONTROL{

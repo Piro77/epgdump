@@ -49,7 +49,7 @@ void	GetSDTEITInfo(FILE *infile,SECcache *secs,int count)
 		pid = bsecs->pid & 0xFF;
 		switch (pid) {
 			case 0x10:  //NIT
-				ret = dumpNIT(bsecs->buf);
+				ret = dumpNIT(bsecs->buf,svttop);
 				break;
 
 			case 0x11: // SDT
@@ -85,13 +85,6 @@ void	dumpCSV(FILE *outfile)
 	SVT_CONTROL	*svtcur ;
 	EIT_CONTROL	*eitcur ;
 
-#ifdef DEBUG1
-	svtcur=svttop->next;
-	while(svtcur != NULL) {
-			printf("%s,0x%x,0x%x,%d\n",svtcur->servicename,svtcur->original_network_id,svtcur->transport_stream_id,svtcur->event_id);
-			svtcur = svtcur->next;
-	}
-#endif
 	svtcur=svttop->next;
 	while(svtcur != NULL) {
 		if (!svtcur->haveeitschedule) {
@@ -104,7 +97,7 @@ void	dumpCSV(FILE *outfile)
 				eitcur = eitcur->next ;
 				continue ;
 			}
-			fprintf(outfile,"%s,0x%x,0x%x,%d,",svtcur->servicename,svtcur->original_network_id,svtcur->transport_stream_id,svtcur->event_id);
+			fprintf(outfile,"%s,0x%x,0x%x,%d,%x,",svtcur->servicename,svtcur->original_network_id,svtcur->transport_stream_id,svtcur->event_id,svtcur->frequency);
 			fprintf(outfile,"0x%x,0x%x,%s,%s,%04d/%02d/%02d %02d:%02d:%02d,%02d:%02d:%02d,%s,%s,%s,0x%x,%s,0x%x,%s,%s,%s\n",
 					eitcur->event_id,
 					eitcur->content_type,

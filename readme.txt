@@ -1,57 +1,75 @@
+epgdump改良版
+
+https://github.com/Piro77/epgdump
+
+・2chのスレのパッチ取り込み
+・読み込み時にseekしないようにした
+・取得EIT情報の増加
+・BS/CSのテーブル不要化
+
+TODO
+・ジャンルコードの取り込み
+・xml出力変更
+・スケジュール対応コード（イベント待ち）
+・TOTによる時刻合わせ
+
+
+以下オリジナルreadme
+------
 xmltv-epg
 
-MPEG-TS�Ɋ܂܂��epg��xml�ŏo�͂���v���O�����ł��B
-��N/E9PqspSk����recfriio Solaris��(http://2sen.dip.jp/cgi-bin/friioup/source/up0737.zip)�Ɋ܂܂��epgdump��
-Linux�ł������������̂��x�[�X��xmltv�p��xml�t�@�C�����쐬���܂��B
+MPEG-TSに含まれるepgをxmlで出力するプログラムです。
+◆N/E9PqspSk氏がrecfriio Solaris版(http://2sen.dip.jp/cgi-bin/friioup/source/up0737.zip)に含まれるepgdumpを
+Linux版を改造したものをベースにxmltv用のxmlファイルを作成します。
 
-�܂��A�^�C�g�����Ɋ܂܂��
-    "�@��"��A"�@�u"�A"�@��"�A"�i"�A"�u"�A���T�u�^�C�g���Ƃ��Ĉ����l�ɏC�����Ă��܂��B
-��F
+また、タイトル内に含まれる
+    "　第"や、"　「"、"　＃"、"（"、"「"、をサブタイトルとして扱う様に修正しています。
+例：
 
-�^�C�g�����A
-�����̂悢���I�u���̎��N�̓����������v
-�̏ꍇ
-�����̂悢���I���^�C�g���ɁA�u���̎��N�̓����������v���T�u�^�C�g���ɒǉ�����܂��B
+タイトルが、
+明日のよいち！「あの時君はワルかった」
+の場合
+明日のよいち！がタイトルに、「あの時君はワルかった」がサブタイトルに追加されます。
 
-�T�u�^�C�g���Ƃ��Ĉ������̂𑝂₷�ꍇ�́Aeit.c�ɂ���subtitle_cnv_str�ɒǉ����Ă��������B
+サブタイトルとして扱うものを増やす場合は、eit.cにあるsubtitle_cnv_strに追加してください。
 
-�g�p���@�͈ȉ��̒ʂ�ł��B
+使用方法は以下の通りです。
 
 Usage : ./epgdump /BS <tsFile> <outfile>
 Usage : ./epgdump <ontvcode> <tsFile> <outfile>
-ontvcode �`�����l�����ʎq�B****.ontvjapan.com �Ȃ�
-/BS      BS���[�h�B���TS����BS�S�ǂ̃f�[�^��ǂݍ��݂܂��B
-/CS      CS���[�h�B���TS���畡���ǂ̃f�[�^��ǂݍ��݂܂��B
+ontvcode チャンネル識別子。****.ontvjapan.com など
+/BS      BSモード。一つのTSからBS全局のデータを読み込みます。
+/CS      CSモード。一つのTSから複数局のデータを読み込みます。
 
-make�����epgdump���r���h����܂��B
+makeするとepgdumpがビルドされます。
 
-epgdump���C�Z���X(Solaris�ł����p):
->epgdump�Ɋւ��ẮABonTest Ver.1.40���炻�̂܂܃\�[�X�������Ă��Ă��镔����
->���邽�߁A���̃��C�Z���X�ɏ]�����܂��B
->BonTest��Readme.txt���
+epgdumpライセンス(Solaris版より引用):
+>epgdumpに関しては、BonTest Ver.1.40からそのままソースを持ってきている部分も
+>あるため、そのライセンスに従いします。
+>BonTestのReadme.txtより
 >>
->>�R�D���C�Z���X�ɂ���
->>�@�@�E�{�p�b�P�[�W�Ɋ܂܂��S�Ẵ\�[�X�R�[�h�A�o�C�i���ɂ��Ē��쌠�͈�؎咣���܂���B
->>�@�@�E�I���W�i���̂܂ܖ��͉��ς��A�e���̃\�t�g�E�F�A�Ɏ��R�ɓY�t�A�g�ݍ��ނ��Ƃ��ł��܂��B
->>�@�@�E�A��GPL�ɏ]�����Ƃ�v�����܂��̂ł������s���ꍇ�̓\�[�X�R�[�h�̊J�����K�{�ƂȂ�܂��B
->>�@�@�E���̂Ƃ��{�\�t�g�E�F�A�̒��쌠�\�����s�����ǂ����͔C�ӂł��B
->>�@�@�E�{�\�t�g�E�F�A��FAAD2�̃��C�u�����Ńo�C�i�����g�p���Ă��܂��B
+>>３．ライセンスについて
+>>　　・本パッケージに含まれる全てのソースコード、バイナリについて著作権は一切主張しません。
+>>　　・オリジナルのまま又は改変し、各自のソフトウェアに自由に添付、組み込むことができます。
+>>　　・但しGPLに従うことを要求しますのでこれらを行う場合はソースコードの開示が必須となります。
+>>　　・このとき本ソフトウェアの著作権表示を行うかどうかは任意です。
+>>　　・本ソフトウェアはFAAD2のライブラリ版バイナリを使用しています。
 >>
->>�@�@�@"Code from FAAD2 is copyright (c) Nero AG, www.nero.com"
+>>　　　"Code from FAAD2 is copyright (c) Nero AG, www.nero.com"
 >>
->>�@�@�E�r���h�ɕK�v�Ȋ�
->>�@�@�@- Microsoft Visual Studio 2005 �ȏ�@��MFC���K�v
->>�@�@�@- Microsoft Windows SDK v6.0 �ȏ�@�@��DirectShow���N���X�̃R���p�C���ς݃��C�u�������K�v
->>�@�@�@- Microsoft DirectX 9.0 SDK �ȏ�
+>>　　・ビルドに必要な環境
+>>　　　- Microsoft Visual Studio 2005 以上　※MFCが必要
+>>　　　- Microsoft Windows SDK v6.0 以上　　※DirectShow基底クラスのコンパイル済みライブラリが必要
+>>　　　- Microsoft DirectX 9.0 SDK 以上
 
 Special Thanks:
-�ESolaris�ŊJ���҂̕�
-�E�g���c�[�����̐l
-�E��N/E9PqspSk��
-�EARIB(�����̖����_�E�����[�h�ɑ΂���)
+・Solaris版開発者の方
+・拡張ツール中の人
+・◆N/E9PqspSk氏
+・ARIB(資料の無料ダウンロードに対して)
 
-����m�F��:
+動作確認環境:
   Debian GNU/Linux sid
   Linux 2.6.27.19 SMP PREEMPT x86_64
 
-tomy ��CfWlfzSGyg
+tomy ◆CfWlfzSGyg
