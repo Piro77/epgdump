@@ -15,7 +15,7 @@
 
 
 SVT_CONTROL	*svttop = NULL;
-#define		SECCOUNT	6
+#define		SECCOUNT	10
 char	title[1024];
 char	subtitle[1024];
 char	Category[1024];
@@ -75,6 +75,11 @@ void	GetSDTEITInfo(FILE *infile,SECcache *secs,int count)
 				break;
 			case 0x14: // TDT
 				ret = dumpTDT(bsecs->buf);
+				break;
+			case 0x23: // TDT
+			case 0x26: // TDT
+			case 0x27: // TDT
+		//		ret = dumpSDTT(bsecs->buf);
 				break;
 		}
 
@@ -234,11 +239,9 @@ int main(int argc, char *argv[])
 	secs[3].pid = 0x23; /* TDT */
 	secs[4].pid = 0x28; /* TDT */
 	secs[5].pid = 0x10; /* NIT */
-	/*
-	secs[2].pid = 0x23; SDTT
-	secs[2].pid = 0x26;
-	secs[3].pid = 0x27;
-	*/
+	secs[6].pid = 0x23; /* SDTT */
+	secs[7].pid = 0x26;
+	secs[8].pid = 0x27;
 
 	if(argc == 4){
 		file = argv[2];
