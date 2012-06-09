@@ -41,6 +41,12 @@ int getBit(unsigned char *byte, int *pbit, int gbit) {
 	unsigned char tbuf[4]; /* intの最大32bit */
 	unsigned int tnum;
 
+        tnum = fbyte[0] << 24 | fbyte[1] << 16 | fbyte[2] << 8 | fbyte[3];
+        tnum = ((tnum >> lcutbit) & ~(~0 << gbit));
+        *pbit += gbit;
+        return tnum;
+
+
 	//memcpy(tbuf, fbyte, sizeof(unsigned char) * 4);
 	tbuf[0]=fbyte[0];
 	tbuf[1]=fbyte[1];
