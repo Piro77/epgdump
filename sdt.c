@@ -78,7 +78,7 @@ void	enqueue_sdt(SVT_CONTROL *top, SVT_CONTROL *sdtptr)
 
 	if(top->next == NULL){
 		top->next = sdtptr ;
-		top->prev = top ;
+		sdtptr->prev = top ;
 		return ;
 	}
 	cur = top->next ;

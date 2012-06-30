@@ -115,7 +115,7 @@ static  CONTENT_TYPE	ContentCatList[CAT_COUNT] = {
 	{ "ドキュメンタリー／教養", "documentary" },
 	{ "劇場／公演", "stage" },
 	{ "趣味／教育", "hobby" },
-	{ "福祉", "etc" },			//福祉
+	{ "福祉", "welfare" },			//福祉
 	{ "予備", "etc" }, //予備
 	{ "予備", "etc" }, //予備
 	{ "予備", "etc" }, //予備
