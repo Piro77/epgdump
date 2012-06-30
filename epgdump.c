@@ -1,3 +1,7 @@
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -270,6 +274,7 @@ int main(int argc, char *argv[])
 		fprintf(stdout, "  csv        csv  output mode\n");
 		fprintf(stdout, "  check      check event\n");
 		fprintf(stdout, "  wait       wait  event\n");
+		fprintf(stdout, "VERSION : %s\n",VERSION);
 		return 0;
 	}
 
