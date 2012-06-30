@@ -917,7 +917,7 @@ int dumpEIT2(unsigned char *ptr, SVT_CONTROL *svttop)
 					if (cur) {
 						cur->audio = audioComponentDesc.component_type;
 						if (audioComponentDesc.ES_multi_lingual_flag==0x01) {
-							cur->multiaudio = calloc(1,20);
+							cur->multiaudio = calloc(1,22);
 							strcpy(cur->multiaudio,"二ヶ国語[");
 							strncat(cur->multiaudio,audioComponentDesc.ISO_639_language_code,3);
 							strcat(cur->multiaudio," ");
