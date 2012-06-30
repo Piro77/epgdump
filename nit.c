@@ -75,17 +75,39 @@ int parseServiceListDescriptor(unsigned char *data)
 int parseSatelliteDeliverySystemDescriptor(unsigned char *data, SatelliteDeliverySystemDescriptor *sdsd)
 {
 	int boff = 0;
-	int length,tag;
+	int length,tag,i;
 
 	tag = getBit(data,&boff,8);
 	length = getBit(data,&boff,8);
 
-	sdsd->frequency = getBit(data,&boff,32);
-	sdsd->orbital_position = getBit(data,&boff,16);
+	sdsd->frequency = 0;
+	// 4bit BCDx8 xxx.xxxxxGHz
+	for(i=0;i<7;i++) {
+		sdsd->frequency += getBit(data,&boff,4);
+		sdsd->frequency *= 10;
+	}
+	sdsd->frequency += getBit(data,&boff,4);
+
+	sdsd->orbital_position = 0;
+	// 4bit BCDx4 xxx.x
+	for(i=0;i<3;i++) {
+		sdsd->orbital_position += getBit(data,&boff,4);
+		sdsd->orbital_position *= 10;
+	}
+	sdsd->orbital_position += getBit(data,&boff,4);
+
 	sdsd->west_east_flag = getBit(data,&boff,1);
 	sdsd->polarisation = getBit(data,&boff,2);
 	sdsd->modulation = getBit(data,&boff,5);
-	sdsd->symbol_rate = getBit(data,&boff,28);
+
+	sdsd->symbol_rate = 0;
+	// 4bit BCDx6 xxx.xxxx
+	for(i=0;i<5;i++) {
+		sdsd->symbol_rate += getBit(data,&boff,4);
+		sdsd->symbol_rate *= 10;
+	}
+	sdsd->symbol_rate += getBit(data,&boff,4);
+
 	sdsd->FEC_inner = getBit(data,&boff,4);
 
 	return boff/8;
@@ -95,7 +117,7 @@ void	setsdtinfo(SVT_CONTROL *top, NITbody *nitb,SatelliteDeliverySystemDescripto
 {
 	        SVT_CONTROL     *cur = top ;
 	        while(cur != NULL){
-        	        if ((cur->transport_stream_id == nitb->transport_stream_id) &&
+			if ((cur->transport_stream_id == nitb->transport_stream_id) &&
 			   (cur->original_network_id == nitb->original_network_id))
 			{
 				cur->frequency = sdsd->frequency;
@@ -148,11 +170,11 @@ void dumpNIT(unsigned char *ptr, SVT_CONTROL *top)
 					len = parseSatelliteDeliverySystemDescriptor(ptr,&sdsd);
 					setsdtinfo(top,&nitb,&sdsd);
 #ifdef DEBUG1
-	printf("SatteliteInfo %x %x Freq %x\n",nitb.transport_stream_id,nitb.original_network_id,sdsd.frequency);
-	printf(" orbital position %x\n",sdsd.orbital_position); 
+	printf("SatteliteInfo %x %x Freq %.5f GHz \n",nitb.transport_stream_id,nitb.original_network_id,(float)sdsd.frequency/10000.0);
+	printf(" orbital position %.1f\n",(float)sdsd.orbital_position/10.0); 
 	printf("         westeast %s\n",sdsd.west_east_flag?"west":"east"); 
 	printf("     polarisatoin %x\n",sdsd.modulation); 
-	printf("      symbol_rate %x\n",sdsd.symbol_rate); 
+	printf("      symbol_rate %.4f\n",(float)sdsd.symbol_rate/1000.0); 
 #endif
 					break;
 				default:

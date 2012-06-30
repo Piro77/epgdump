@@ -102,7 +102,7 @@ void	dumpCSV(FILE *outfile)
 				eitcur = eitcur->next ;
 				continue ;
 			}
-			fprintf(outfile,"%s,0x%x,0x%x,%d,%x,",svtcur->servicename,svtcur->original_network_id,svtcur->transport_stream_id,svtcur->event_id,svtcur->frequency);
+			fprintf(outfile,"%s,0x%x,0x%x,%d,%d,",svtcur->servicename,svtcur->original_network_id,svtcur->transport_stream_id,svtcur->event_id,svtcur->frequency);
 			fprintf(outfile,"0x%x,0x%x,%s,%s,%04d/%02d/%02d %02d:%02d:%02d,%02d:%02d:%02d,%s,%s,%s,0x%x,%s,0x%x,%s,%s,%s\n",
 					eitcur->event_id,
 					eitcur->content_type,
