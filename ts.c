@@ -49,7 +49,7 @@ retry:
 		} else {
 			len = secs[ridx].cur.payloadlen - secs[ridx].curlen;
 			/* 全部設定済みチェック */
-			if(len == 0) {
+			if(len <= 0) { // XXX lenが-になることがある。なぜだろう
 				secs[ridx].cont = 0;
 				secs[ridx].seclen = 0;
 				secs[ridx].setlen = 0;
