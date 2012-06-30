@@ -219,6 +219,7 @@ void	dumpXML(FILE *outfile,char *bs_cs_grch)
 		}
 		svtcur=svtcur->next;
 	}
+    fprintf(outfile, "</tv>\n");
 }
 
 int main(int argc, char *argv[])
