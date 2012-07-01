@@ -13,6 +13,7 @@
 #include "ts.h"
 #include "sdt.h"
 #include "eit.h"
+#include "nit.h"
 #include "ts_ctl.h"
 
 #include "xmldata.c"
@@ -53,7 +54,7 @@ void	GetSDTEITInfo(FILE *infile,SECcache *secs,int count)
 		pid = bsecs->pid & 0xFF;
 		switch (pid) {
 			case 0x10:  //NIT
-				ret = dumpNIT(bsecs->buf,svttop);
+				dumpNIT(bsecs->buf,svttop);
 				break;
 
 			case 0x11: // SDT
