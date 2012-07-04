@@ -14,6 +14,7 @@
 #include "sdt.h"
 #include "eit.h"
 #include "nit.h"
+#include "tdt.h"
 #include "ts_ctl.h"
 
 #include "xmldata.c"
@@ -79,7 +80,7 @@ void	GetSDTEITInfo(FILE *infile,SECcache *secs,int count)
 				}
 				break;
 			case 0x14: // TDT
-				ret = dumpTDT(bsecs->buf);
+				dumpTDT(bsecs->buf);
 				break;
 			case 0x23: // TDT
 			case 0x26: // TDT
@@ -285,6 +286,7 @@ int main(int argc, char *argv[])
 	}
 
 	if(((strcmp(argv[1], "check") == 0)||(strcmp(argv[1],"wait"))==0)){
+		return 1;
 	}
 
 	svttop = calloc(1, sizeof(SVT_CONTROL));
