@@ -9,6 +9,7 @@
 extern "C"{
 #endif /* __cplusplus */
 
+	int   strrep(char *, char *, char *);
 	int   getBit(unsigned char *byte, int *pbit, int gbit);
 	void  getStr(char *tostr, unsigned char *byte, int *pbit, int len);
 	int   parseOTHERdesc(unsigned char *data);
