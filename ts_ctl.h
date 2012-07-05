@@ -6,7 +6,12 @@
 typedef	struct	_SVT_CONTROL	SVT_CONTROL;
 typedef	struct	_EIT_CONTROL	EIT_CONTROL;
 typedef struct	_CURRENTNEXT	CURRENTNEXT;
+typedef struct  _EITEXTDESC     EITEXTDESC;
 
+struct _EITEXTDESC {
+    char *item_description;
+    char *item;
+};
 struct _CURRENTNEXT {
 	short	event_id;
 	char	start_time[5];
@@ -49,6 +54,8 @@ struct	_EIT_CONTROL{
 	char	*title ;			// タイトル
 	char	*subtitle ;			// サブタイトル
 	char	*extdesc;			// 拡張番組情報
+	short  eitextcnt;
+    EITEXTDESC *eitextdesc;
 	char	video;				// 映像情報
 	char	audio;				// 音声情報
 	char	*multiaudio;			// 二ヶ国語
