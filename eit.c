@@ -643,8 +643,11 @@ int dumpEIT2(unsigned char *ptr, SVT_CONTROL *svttop)
                 case 0xC4:
                     len = parseAudioComponentDesc(ptr, &audioComponentDesc);
                     if (cur) {
-                        cur->audio = audioComponentDesc.component_type;
-                        if (audioComponentDesc.ES_multi_lingual_flag==0x01) {
+			if (audioComponentDesc.main_component_flag == 1 && cur->audio == 0)
+                        	cur->audio = audioComponentDesc.component_type;
+			if (audioComponentDesc.main_component_flag == 0 && cur->subaudio == 0)
+                        	cur->subaudio = audioComponentDesc.component_type;
+                        if (audioComponentDesc.ES_multi_lingual_flag==0x01 && cur->multiaudio == NULL) {
                             cur->multiaudio = calloc(1,22);
                             strcpy(cur->multiaudio,"二ヶ国語[");
                             strncat(cur->multiaudio,audioComponentDesc.ISO_639_language_code,3);
@@ -694,6 +697,11 @@ int dumpEIT2(unsigned char *ptr, SVT_CONTROL *svttop)
 
                         loop_elen = eevthead.length_of_items;
                         loop_len -= loop_elen;
+
+                        if (cur && cur->eitextcnt == 0 && eevthead.last_descriptor_number > 0) {
+                            cur->eitextcnt = eevthead.last_descriptor_number;
+                            cur->eitextdesc = calloc(cur->eitextcnt+1,sizeof(EITEXTDESC));
+                        }
                         while(loop_elen > 0) {
                             len = parseEEVTDitem(ptr, &eevtitem,cur);
 
@@ -704,8 +712,11 @@ int dumpEIT2(unsigned char *ptr, SVT_CONTROL *svttop)
                             if(checkEEVTDitem(&save_eevtitem, &eevtitem, 
                                         eevthead.descriptor_number)) {
                                 if (cur && cur->eitextdesc) {
-                                    cur->eitextdesc[eevtitem.descriptor_number].item_description = strdup(eevtitem.item_description);
-                                    cur->eitextdesc[eevtitem.descriptor_number].item = strdup(eevtitem.item) ;
+                                    if (!cur->eitextdesc[eevtitem.descriptor_number].item_description)
+                                        cur->eitextdesc[eevtitem.descriptor_number].item_description = strdup(eevtitem.item_description);
+                                    if (!cur->eitextdesc[eevtitem.descriptor_number].item)
+                                        cur->eitextdesc[eevtitem.descriptor_number].item = strdup(eevtitem.item);
+
                                 }
 
                             }
@@ -732,8 +743,10 @@ int dumpEIT2(unsigned char *ptr, SVT_CONTROL *svttop)
 
         if(checkEEVTDitem(&save_eevtitem, NULL, 0)) {
             if (cur && cur->eitextdesc) {
-                cur->eitextdesc[save_eevtitem.descriptor_number].item_description = strdup(save_eevtitem.item_description);
-                cur->eitextdesc[save_eevtitem.descriptor_number].item = strdup(save_eevtitem.item);
+                if (!cur->eitextdesc[save_eevtitem.descriptor_number].item_description)
+                    cur->eitextdesc[save_eevtitem.descriptor_number].item_description = strdup(save_eevtitem.item_description);
+                if (!cur->eitextdesc[save_eevtitem.descriptor_number].item)
+                    cur->eitextdesc[save_eevtitem.descriptor_number].item = strdup(save_eevtitem.item);
             }
 
         }

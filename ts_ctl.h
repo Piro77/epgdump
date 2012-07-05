@@ -54,10 +54,11 @@ struct	_EIT_CONTROL{
 	char	*title ;			// タイトル
 	char	*subtitle ;			// サブタイトル
 	char	*extdesc;			// 拡張番組情報
-	short  eitextcnt;
-    EITEXTDESC *eitextdesc;
+	short   eitextcnt;
+    EITEXTDESC  *eitextdesc;
 	char	video;				// 映像情報
 	char	audio;				// 音声情報
+    char    subaudio;           // audio track2
 	char	*multiaudio;			// 二ヶ国語
 	char	freeCA;				// スクランブル
 };
