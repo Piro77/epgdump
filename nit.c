@@ -4,6 +4,7 @@
 
 #include "util.h"
 #include "ts_ctl.h"
+#include "xmldata.c"
 
 #include "nit.h"
 
@@ -51,20 +52,24 @@ int parseNITbody(unsigned char *data, NITbody *b) {
 	return boff/8;
 }
 
-int parseServiceListDescriptor(unsigned char *data)
+int parseServiceListDescriptor(unsigned char *data,ServiceList *sl)
 {
 	int boff = 0;
 	int i;
 	int length,tag;
 
-	ServiceListDescriptor sld;
+	memset(sl,0,sizeof(ServiceList));
+
 	tag = getBit(data,&boff,8);
 	length = getBit(data,&boff,8);
+	sl->length = length;
 
 	for(i=0;i<length;) {
-		sld.service_id = getBit(data, &boff, 16);
-		sld.service_type = getBit(data, &boff, 8);
-		//printf("id[%d] 0x[%x] ",sld.service_id,sld.service_type);
+		sl->sld[i].service_id = getBit(data, &boff, 16);
+		sl->sld[i].service_type = getBit(data, &boff, 8);
+#ifdef DEBUG
+		printf("id[%d] 0x[%x]\n",sl->sld[i].service_id,sl->sld[i].service_type);
+#endif
 		i+=3;
 	}
 	
@@ -81,7 +86,7 @@ int parseSatelliteDeliverySystemDescriptor(unsigned char *data, SatelliteDeliver
 	length = getBit(data,&boff,8);
 
 	sdsd->frequency = 0;
-	// 4bit BCDx8 xxx.xxxxxGHz
+	// 4bit BCDx8 xx.xxxxxxGHz
 	for(i=0;i<7;i++) {
 		sdsd->frequency += getBit(data,&boff,4);
 		sdsd->frequency *= 10;
@@ -113,15 +118,21 @@ int parseSatelliteDeliverySystemDescriptor(unsigned char *data, SatelliteDeliver
 	return boff/8;
 }
 
-void	setsdtinfo(SVT_CONTROL *top, NITbody *nitb,SatelliteDeliverySystemDescriptor *sdsd)
+void	setsdtinfo(SVT_CONTROL *top, NITbody *nitb,SatelliteDeliverySystemDescriptor *sdsd,ServiceList *sl)
 {
 	        SVT_CONTROL     *cur = top ;
+            int i;
 	        while(cur != NULL){
+			for(i=0;i<sl->length;i++)
+				if (sl->sld[i].service_id == cur->event_id)
+					cur->frequency = sdsd->frequency;
+/*
 			if ((cur->transport_stream_id == nitb->transport_stream_id) &&
 			   (cur->original_network_id == nitb->original_network_id))
 			{
 				cur->frequency = sdsd->frequency;
 			}
+*/
                 	cur = cur->next ;
 	        }
 		return;
@@ -139,6 +150,7 @@ void dumpNIT(unsigned char *ptr, SVT_CONTROL *top)
 	NIThead nith;
 	NITbody nitb;
 	SatelliteDeliverySystemDescriptor sdsd;
+	ServiceList sl;
 
 	len = parseNIThead(ptr,&nith);
 
@@ -164,16 +176,16 @@ void dumpNIT(unsigned char *ptr, SVT_CONTROL *top)
 			len=0;
 			switch(desctag) {
 				case 0x41:
-					len = parseServiceListDescriptor(ptr);
+					len = parseServiceListDescriptor(ptr,&sl);
 					break;
 				case 0x43:
 					len = parseSatelliteDeliverySystemDescriptor(ptr,&sdsd);
-					setsdtinfo(top,&nitb,&sdsd);
-#ifdef DEBUG1
-	printf("SatteliteInfo %x %x Freq %.5f GHz \n",nitb.transport_stream_id,nitb.original_network_id,(float)sdsd.frequency/10000.0);
+					setsdtinfo(top,&nitb,&sdsd,&sl);
+#ifdef DEBUG
+	printf("SatteliteInfo %x %x Freq %.5f GHz %s\n",nitb.transport_stream_id,nitb.original_network_id,(float)sdsd.frequency/100000.0,getTP(sdsd.frequency));
 	printf(" orbital position %.1f\n",(float)sdsd.orbital_position/10.0); 
 	printf("         westeast %s\n",sdsd.west_east_flag?"west":"east"); 
-	printf("     polarisatoin %x\n",sdsd.modulation); 
+	printf("     polarization %s\n",getPolarization((int)sdsd.polarisation)); 
 	printf("      symbol_rate %.4f\n",(float)sdsd.symbol_rate/1000.0); 
 #endif
 					break;

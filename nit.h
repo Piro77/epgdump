@@ -36,9 +36,14 @@ typedef struct _NITbody {
 } NITbody;
 
 typedef struct _ServiceListDescriptor {
-	int	service_id;
-	int	service_type;
+	short	service_id;
+	char	service_type;
 }ServiceListDescriptor;
+
+typedef struct _ServiceList {
+	int   length;
+	ServiceListDescriptor sld[256];
+}ServiceList;
 
 typedef struct _SatelliteDeliverySystemDescriptor {
 	int		frequency;

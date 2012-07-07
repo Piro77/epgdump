@@ -276,5 +276,50 @@ static char *getAudioComponentDescStr(int cat) {
 	}
 	return ret;
 }
+/* */
+static char *getTP(int freq) {
+	char *ret;
+	ret="";
+	switch (freq) {
+		case 1172748: ret = "BS1"; break;
+		case 1176584: ret = "BS3"; break;
+		case 1180420: ret = "BS5"; break;
+		case 1184256: ret = "BS7"; break;
+		case 1188092: ret = "BS9"; break;
+		case 1191928: ret = "BS11"; break;
+		case 1195764: ret = "BS13"; break;
+		case 1199600: ret = "BS15"; break;
+		case 1203436: ret = "BS17"; break;
+		case 1207272: ret = "BS19"; break;
+		case 1211108: ret = "BS21"; break;
+		case 1214944: ret = "BS23"; break;
+		case 1229100: ret = "CS2"; break;
+		case 1233100: ret = "CS4"; break;
+		case 1237100: ret = "CS6"; break;
+		case 1241100: ret = "CS4"; break;
+		case 1245100: ret = "CS10"; break;
+		case 1249100: ret = "CS12"; break;
+		case 1253100: ret = "CS14"; break;
+		case 1257100: ret = "CS16"; break;
+		case 1261100: ret = "CS18"; break;
+		case 1265100: ret = "CS20"; break;
+		case 1269100: ret = "CS22"; break;
+		case 1273100: ret = "CS24"; break;
+    }
+    return ret;
+}
+static char *getPolarization(int polarization)
+{
+	char *ret;
+	ret="";
+	switch (polarization) {
+        case 0x00: ret = "水平";break;
+        case 0x01: ret = "垂直";break;
+        case 0x02: ret = "左旋";break;
+        case 0x03: ret = "右旋";break;
+	default:break;
+    }
+return ret;
+}
 
 #endif
