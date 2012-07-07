@@ -122,8 +122,10 @@ void	dumpCSV(FILE *outfile)
             if (eitcur->eitextcnt>0) {
                 fprintf(outfile,"\"");
                 for(i=0;i<eitcur->eitextcnt;i++) {
-			        fprintf(outfile, "%s\n", eitcur->eitextdesc[i].item_description);
-			        fprintf(outfile, "%s\n", eitcur->eitextdesc[i].item);
+                    if (eitcur->eitextdesc[i].item_description)
+			            fprintf(outfile, "%s\n",eitcur->eitextdesc[i].item_description);
+                    if (eitcur->eitextdesc[i].item)
+			            fprintf(outfile, "%s\n", eitcur->eitextdesc[i].item);
                 }
                 fprintf(outfile,"\",");
             }
