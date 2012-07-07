@@ -74,6 +74,8 @@ void	GetSDTEITInfo(FILE *infile,SECcache *secs,int count)
 				}
 				break;
 			case 0x12: // EIT
+			case 0x26: // EIT(地デジ)
+			case 0x27: // EIT(地デジ)
 				if (sdtflg) {
 					ret = dumpEIT2(bsecs->buf,svttop);
 					if (ret == 0) sdtflg = 0;
@@ -83,8 +85,6 @@ void	GetSDTEITInfo(FILE *infile,SECcache *secs,int count)
 				dumpTDT(bsecs->buf);
 				break;
 			case 0x23: // TDT
-			case 0x26: // TDT
-			case 0x27: // TDT
 		//		ret = dumpSDTT(bsecs->buf);
 				break;
 		}
@@ -95,6 +95,7 @@ void	dumpCSV(FILE *outfile)
 {
 	SVT_CONTROL	*svtcur ;
 	EIT_CONTROL	*eitcur ;
+    int i;
 
 	svtcur=svttop->next;
 	while(svtcur != NULL) {
@@ -109,7 +110,7 @@ void	dumpCSV(FILE *outfile)
 				continue ;
 			}
 			fprintf(outfile,"%s,0x%x,0x%x,%d,%d,",svtcur->servicename,svtcur->original_network_id,svtcur->transport_stream_id,svtcur->event_id,svtcur->frequency);
-			fprintf(outfile,"0x%x,0x%x,%s,%s,%04d/%02d/%02d %02d:%02d:%02d,%02d:%02d:%02d,%s,%s,%s,0x%x,%s,0x%x,%s,%s,%s\n",
+			fprintf(outfile,"0x%x,0x%x,%s,%s,%04d/%02d/%02d %02d:%02d:%02d,%02d:%02d:%02d,\"%s\",\"%s\",",
 					eitcur->event_id,
 					eitcur->content_type,
 					ContentCatList[(eitcur->content_type >> 4)].japanese,
@@ -117,14 +118,34 @@ void	dumpCSV(FILE *outfile)
 					eitcur->yy,eitcur->mm,eitcur->dd,eitcur->hh,eitcur->hm,eitcur->ss,
 					eitcur->ehh,eitcur->emm,eitcur->ess,
 					eitcur->title,
-					eitcur->subtitle,
-					eitcur->extdesc?eitcur->extdesc:"",
+					eitcur->subtitle);
+            if (eitcur->eitextcnt>0) {
+                fprintf(outfile,"\"");
+                for(i=0;i<eitcur->eitextcnt;i++) {
+			        fprintf(outfile, "%s\n", eitcur->eitextdesc[i].item_description);
+			        fprintf(outfile, "%s\n", eitcur->eitextdesc[i].item);
+                }
+                fprintf(outfile,"\",");
+            }
+            else {
+                fprintf(outfile,",");
+            }
+			fprintf(outfile,"0x%x,%s,",
 					(unsigned char)eitcur->video,
-					getVideoComponentDescStr((unsigned char)eitcur->video),
-					eitcur->audio,
-					getAudioComponentDescStr(eitcur->audio),
-					eitcur->multiaudio?eitcur->multiaudio:"",
-					eitcur->freeCA?"有料":"");
+					getVideoComponentDescStr((unsigned char)eitcur->video));
+            for(i=0;i<2;i++) {
+                if (eitcur->audiodesc[i].audiotype > 0) {
+			    fprintf(outfile,"0x%x-%s-%s-%s,",
+                        eitcur->audiodesc[i].audiotype,
+                        getAudioComponentDescStr(eitcur->audiodesc[i].audiotype),
+                        eitcur->audiodesc[i].langcode,
+                        eitcur->audiodesc[i].audiodesc?eitcur->audiodesc[i].audiodesc:"");
+                }
+                else {
+			fprintf(outfile,",");
+                }
+            }
+			fprintf(outfile,"%s\n",eitcur->freeCA?"有料":"");
 			eitcur=eitcur->next;
 		}
 		svtcur=svtcur->next;
@@ -159,6 +180,9 @@ void	dumpXML(FILE *outfile,char *bs_cs_grch)
 
 		fprintf(outfile, "  <channel id=\"%s_%d\">\n",bs_cs_grch, svtcur->event_id);
 		fprintf(outfile, "    <display-name lang=\"ja_JP\">%s</display-name>\n", ServiceName);
+#if 0
+		fprintf(outfile, "    <id ts=\"%d\" on=\"%d\" sv=\"%d\" frequency=\"%d\"/>\n",svtcur->original_network_id,svtcur->transport_stream_id,svtcur->event_id,svtcur->frequency);
+#endif
 		fprintf(outfile, "  </channel>\n");
 		svtcur=svtcur->next;
 	}
@@ -209,13 +233,13 @@ void	dumpXML(FILE *outfile,char *bs_cs_grch)
 			strftime(cendtime, (sizeof(cendtime) - 1), "%Y%m%d%H%M%S", endtl);
 			strftime(cstarttime, (sizeof(cstarttime) - 1), "%Y%m%d%H%M%S", &tl);
 			
-			fprintf(outfile, "  <programme start=\"%s +0900\" stop=\"%s +0900\" channel=\"%s_%d\">\n",	
+			fprintf(outfile, "  <programme start=\"%s +0900\" stop=\"%s +0900\" channel=\"%s_%d\">\n",
 				cstarttime, cendtime, bs_cs_grch,svtcur->event_id);
 			
 			fprintf(outfile, "    <title lang=\"ja_JP\">%s</title>\n", title);
 			
 			fprintf(outfile, "    <desc lang=\"ja_JP\">%s</desc>\n", subtitle);
-			
+
 			fprintf(outfile, "    <category lang=\"ja_JP\">%s</category>\n", Category);
 			
 			fprintf(outfile, "    <category lang=\"en\">%s</category>\n", ContentCatList[(eitcur->content_type >> 4)].english);

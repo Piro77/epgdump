@@ -7,6 +7,13 @@ typedef	struct	_SVT_CONTROL	SVT_CONTROL;
 typedef	struct	_EIT_CONTROL	EIT_CONTROL;
 typedef struct	_CURRENTNEXT	CURRENTNEXT;
 typedef struct  _EITEXTDESC     EITEXTDESC;
+typedef struct	_AUDIODESC	AUDIODESC;
+
+struct _AUDIODESC {
+    char audiotype;     // AudioType
+    char langcode[8];   // 言語コード(jpn) 二ヶ国語の場合(jpn eng)
+    char *audiodesc;    // text
+};
 
 struct _EITEXTDESC {
     char *item_description;
@@ -53,13 +60,10 @@ struct	_EIT_CONTROL{
 	int		ess;
 	char	*title ;			// タイトル
 	char	*subtitle ;			// サブタイトル
-	char	*extdesc;			// 拡張番組情報
 	short   eitextcnt;
-    EITEXTDESC  *eitextdesc;
+	EITEXTDESC  *eitextdesc;		// 拡張番組情報
 	char	video;				// 映像情報
-	char	audio;				// 音声情報
-    char    subaudio;           // audio track2
-	char	*multiaudio;			// 二ヶ国語
+	AUDIODESC	audiodesc[2];		// 音声情報
 	char	freeCA;				// スクランブル
 };
 #endif

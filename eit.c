@@ -189,8 +189,9 @@ int parseAudioComponentDesc(unsigned char *data,AudioComponentDesc *desc) {
         memcpy(desc->ISO_639_language_code2, data + boff / 8, 3);
         boff += 24;
     }
-    memcpy(desc->content, data+(boff/8), desc->descriptor_length);
-    //getStr(desc->content, data, &boff, desc->descriptor_length);
+    if (desc->descriptor_length+2>(boff/8)) {
+        getStr(desc->content, data, &boff, desc->descriptor_length+2-(boff/8));
+    }
 #ifdef DEBUG
     printf("  Audio %s%s",desc->main_component_flag?"":"副",desc->main_component_flag?"":desc->ISO_639_language_code);
     switch (desc->component_type) {
@@ -626,7 +627,7 @@ int dumpEIT2(unsigned char *ptr, SVT_CONTROL *svttop)
         loop_len -= loop_blen;
         while(loop_blen > 0) {
             unsigned char desctag;
-            int sboff;
+            int sboff,ix;
             ContentDesc contentDesc;
             ComponentDesc componentDesc;
             AudioComponentDesc audioComponentDesc;
@@ -642,18 +643,18 @@ int dumpEIT2(unsigned char *ptr, SVT_CONTROL *svttop)
                     break;
                 case 0xC4:
                     len = parseAudioComponentDesc(ptr, &audioComponentDesc);
-                    if (cur) {
-			if (audioComponentDesc.main_component_flag == 1 && cur->audio == 0)
-                        	cur->audio = audioComponentDesc.component_type;
-			if (audioComponentDesc.main_component_flag == 0 && cur->subaudio == 0)
-                        	cur->subaudio = audioComponentDesc.component_type;
-                        if (audioComponentDesc.ES_multi_lingual_flag==0x01 && cur->multiaudio == NULL) {
-                            cur->multiaudio = calloc(1,22);
-                            strcpy(cur->multiaudio,"二ヶ国語[");
-                            strncat(cur->multiaudio,audioComponentDesc.ISO_639_language_code,3);
-                            strcat(cur->multiaudio," ");
-                            strncat(cur->multiaudio,audioComponentDesc.ISO_639_language_code2,3);
-                            strcat(cur->multiaudio,"]");
+                    if (cur) { // XXX 2track only
+                        if (audioComponentDesc.main_component_flag) ix = 0; //主音声
+                        else ix = 1;
+                        if (cur->audiodesc[ix].audiotype == 0) {
+                            cur->audiodesc[ix].audiotype = audioComponentDesc.component_type;
+                            strncpy(cur->audiodesc[ix].langcode,audioComponentDesc.ISO_639_language_code,3);
+                            if (audioComponentDesc.ES_multi_lingual_flag) {
+                                strcat(cur->audiodesc[ix].langcode,"_");
+                                strncat(cur->audiodesc[ix].langcode,audioComponentDesc.ISO_639_language_code,3);
+                            }
+                            if (audioComponentDesc.content)
+                                cur->audiodesc[ix].audiodesc = strdup(audioComponentDesc.content);
                         }
                     }
                     break;
