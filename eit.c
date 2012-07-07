@@ -449,7 +449,7 @@ void	conv_title_subtitle(EIT_CONTROL *eitptr)
         for( ; (unsigned char)*ptr2 == 0x20u ; ptr2++ );
         for( ; (unsigned char)*ptr2 == 0xA1u && (unsigned char)*(ptr2+1) == 0xA1u ; ptr2 += 2);
         for( ; (unsigned char)*ptr2 == 0x20u ; ptr2++ );
-        newsubtitle = calloc(1, ((strlen(ptr2) + 2) + (strlen(eitptr->subtitle) + 1)));
+        newsubtitle = calloc(1, ((strlen(ptr2) + 3) + (strlen(eitptr->subtitle) + 1)));
         memcpy(newsubtitle, ptr2, strlen(ptr2));
         //		*(newsubtitle+strlen(ptr)) = ' ';
         strcat(newsubtitle, "▽");
