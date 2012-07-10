@@ -224,6 +224,31 @@ static char *getContentCat(int cat) {
 	}
 	return ret;
 }
+static char *getVideoAspect(unsigned char cat) {
+	char *ret;
+	ret="";
+    switch(cat&0x0f) {
+        case 0x01:ret = "4:3";break;
+        case 0x02:
+        case 0x03:ret = "16:9";break;
+        case 0x04:ret = ">16:9";break;
+    }
+    return ret;
+}
+static char *getVideoResolution(unsigned char cat) {
+	char *ret;
+	ret="";
+    switch(cat&0xf0) {
+        case 0x90:ret = "QFHD";break;
+        case 0xb0:
+        case 0xc0:
+        case 0xe0:ret = "HD";break;
+        case 0x00:
+        case 0xa0:ret = "SD";break;
+    }
+    return ret;
+}
+
 /* 映像コンポーネント種別 */
 static char *getVideoComponentDescStr(int cat) {
 	char *ret;

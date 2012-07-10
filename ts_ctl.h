@@ -3,11 +3,25 @@
 
 #include	"util.h"
 
+#define	EIT_SDTNOTFOUND	0
+#define	EIT_OK		1
+#define	EIT_CHECKOK	2
+#define	EIT_CHECKNG	3
+
 typedef	struct	_SVT_CONTROL	SVT_CONTROL;
 typedef	struct	_EIT_CONTROL	EIT_CONTROL;
 typedef struct	_CURRENTNEXT	CURRENTNEXT;
 typedef struct  _EITEXTDESC     EITEXTDESC;
 typedef struct	_AUDIODESC	AUDIODESC;
+typedef struct  _EITCHECK   EITCHECK;
+
+struct _EITCHECK {          //イベントチェック用構造体
+    int svid;               // 対象サービスID
+    int evid;               // 対象イベントID
+    time_t  starttime;      // 対象イベント開始時刻(check時のみ設定)
+    time_t  tdttime;        // 現在のTDT(wait時の時刻チェック用)
+    time_t  waitend;        // 最大待機時間(check時は11秒固定)
+};
 
 struct _AUDIODESC {
     char audiotype;     // AudioType
@@ -60,8 +74,8 @@ struct	_EIT_CONTROL{
 	int		ess;
 	char	*title ;			// タイトル
 	char	*subtitle ;			// サブタイトル
-	short   eitextcnt;
-	EITEXTDESC  *eitextdesc;		// 拡張番組情報
+	short  eitextcnt;
+	EITEXTDESC *eitextdesc;
 	char	video;				// 映像情報
 	AUDIODESC	audiodesc[2];		// 音声情報
 	char	freeCA;				// スクランブル

@@ -4,7 +4,7 @@
 
 #include "tdt.h"
 
-void dumpTDT(unsigned char *ptr)
+void dumpTDT(unsigned char *ptr,EITCHECK *chk)
 {
 
 	int		rc ;
@@ -21,8 +21,12 @@ void dumpTDT(unsigned char *ptr)
 	wk = getBit(ptr, &boff, 4);
 	section_length = getBit(ptr,&boff,12);
 	memcpy(JST_time, ptr + (boff / 8),5);
-        boff += 40;
+    boff += 40;
 
+    if (chk) {
+        chk->tdttime = getStartTime(JST_time);
+	printf("[%s]\n",strTime(getStartTime(JST_time),"%Y/%m/%d %H:%M:%S"));
+    }
 #ifdef DEBUG
 	printf("Table %x jst [%s] diff [%f]\n",table_id,strTime(getStartTime(JST_time),"%Y/%m/%d %H:%M:%S"),getTimeDiff(getStartTime(JST_time)));
 #endif

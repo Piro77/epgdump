@@ -536,7 +536,7 @@ static void timecmp(int *thh, int *tmm, int *tss,
     *thh += dhh;
 
 }
-int dumpEIT2(unsigned char *ptr, SVT_CONTROL *svttop)
+int dumpEIT2(unsigned char *ptr, SVT_CONTROL *svttop,EITCHECK *chk)
 {
     EIThead  eith;
     EITbody  eitb;
@@ -578,7 +578,7 @@ int dumpEIT2(unsigned char *ptr, SVT_CONTROL *svttop)
         printf("Not Match %x  %x %x \n",eith.transport_stream_id,eith.original_network_id,eith.service_id);
 #endif
         // 別のストリーム？？
-        return 0;
+        return EIT_SDTNOTFOUND;
     }
 #ifdef DEBUG
     printf("SV  0x%x Table  [0x%x] \n",eith.service_id,eith.table_id);
@@ -592,27 +592,53 @@ int dumpEIT2(unsigned char *ptr, SVT_CONTROL *svttop)
         memset(&save_eevtitem, 0, sizeof(EEVTDitem));
 
         len = parseEITbody(ptr, &eitb);
-#ifdef DEBUG1
-        if (eith.table_id == 0x4e) {
-            if (eith.section_number < 2) {
-                if ((svtcur->cnev[eith.section_number].event_id  != (short)eitb.event_id) ||
-                        (memcmp(svtcur->cnev[eith.section_number].start_time,eitb.start_time,5)!=0) ||
-                        (memcmp(svtcur->cnev[eith.section_number].duration,eitb.duration,3)!=0)) {
-                    // Event Changed
-                    printf("sv[%x]%s [%x] [%s][%d] state %x\n",svtcur->event_id,eith.section_number?"next":"curr",
-                            eitb.event_id,
-                            strTime(getStartTime(eitb.start_time),"%Y/%m/%d %H:%M:%S"),
-                            getDurationSec(eitb.duration),
-                            eitb.running_status);
-                    svtcur->cnev[eith.section_number].event_id = (short)eitb.event_id;
+        if (chk) {
+            if (eith.table_id == 0x4e) {
+                if (eith.section_number < 2) {
+                    if ((svtcur->cnev[eith.section_number].event_id  != (short)eitb.event_id) ||
+                            (memcmp(svtcur->cnev[eith.section_number].start_time,eitb.start_time,5)!=0) ||
+                            (memcmp(svtcur->cnev[eith.section_number].duration,eitb.duration,3)!=0) ||
+                            (eitb.running_status == 0x02)) {
+                        // Event Changed
+                        printf("sv[%d]%s [%d] [%s][%d] state %x\n",svtcur->event_id,eith.section_number?"next":"curr",
+                                eitb.event_id,
+                                strTime(getStartTime(eitb.start_time),"%Y/%m/%d %H:%M:%S"),
+                                getDurationSec(eitb.duration),
+                                eitb.running_status);
+                        svtcur->cnev[eith.section_number].event_id = (short)eitb.event_id;
 
-                    memcpy(svtcur->cnev[eith.section_number].start_time,eitb.start_time,5);
-                    memcpy(svtcur->cnev[eith.section_number].duration,eitb.duration,3);
+                        memcpy(svtcur->cnev[eith.section_number].start_time,eitb.start_time,5);
+                        memcpy(svtcur->cnev[eith.section_number].duration,eitb.duration,3);
+                        if  ((svtcur->event_id == chk->svid) && (eitb.event_id == chk->evid)) {
+                            if (eith.section_number == 0) {
+                                // 現在のイベント＝チェックイベント(すでに始まっている)
+                                return EIT_CHECKOK;
+                            }
+                            if (eith.section_number == 1) { // 次のイベントとマッチ
+                                if (chk->starttime > 0) { //check
+                                    printf("%d\n",getStartTime(eitb.start_time)-chk->starttime);
+                                    return EIT_CHECKOK;
+                                }
+                            }
+                        }
+                        if (chk->starttime > 0 && svtcur->event_id == chk->svid && svtcur->cnev[1].event_id>0) {
+                            //次のイベント情報を取得してもマッチしていない
+                            return EIT_CHECKNG;
+                        }
+                    } //event changed
+                    else {
+                        if  ((svtcur->event_id == chk->svid) && (svtcur->cnev[1].event_id == chk->evid)) {
+                            if (chk->tdttime > 0) { // TDT時刻とチェックして35秒以内ならOK
+                                if (getStartTime(svtcur->cnev[1].start_time) < chk->tdttime + 35) {
+                                    return EIT_CHECKOK;
+                                }
+                            }
+                        }
+                    }
                 }
             }
+            return EIT_OK;
         }
-#endif
-
         ehh = eitb.hh;
         emm = eitb.hm;
         ess = eitb.ss;
@@ -753,6 +779,6 @@ int dumpEIT2(unsigned char *ptr, SVT_CONTROL *svttop)
         }
     }
 
-    return 1;
+    return EIT_OK;
 }
 

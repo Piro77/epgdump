@@ -41,6 +41,49 @@ void	xmlspecialchars(char *str)
 }
 
 
+int     CheckEIT(FILE *infile,SECcache *secs,int count,EITCHECK *chk)
+{
+	SVT_CONTROL	*svtcur ;
+	int 		pid,ret,sdtflg;
+	SECcache  *bsecs;
+
+	svttop = calloc(1, sizeof(SVT_CONTROL));
+    sdtflg = 0;
+
+	while((bsecs = readTS(infile, secs, count)) != NULL) {
+		pid = bsecs->pid & 0xFF;
+		switch (pid) {
+			case 0x11: //SDT
+				if (sdtflg==0) {
+					sdtflg=1;
+					dumpSDT(bsecs->buf, svttop);
+					svtcur = svttop->next;
+					while(svtcur) {
+						if (svtcur->eit == NULL) {
+							svtcur->eit = calloc(1, sizeof(EIT_CONTROL));
+						}
+						svtcur = svtcur->next;
+					}
+				}
+				break;
+			case 0x12: // EIT
+				ret = dumpEIT2(bsecs->buf,svttop,chk);
+				if (ret == EIT_CHECKOK || ret == EIT_CHECKNG) { //CHECK COMPLETE
+					return ret - EIT_CHECKOK;
+				}
+				if (ret == EIT_SDTNOTFOUND) sdtflg=0;
+				break;
+			case 0x14: // TDT
+				dumpTDT(bsecs->buf,chk);
+				break;
+			case 0x13: // RST
+				printf("RST\n");
+				break;
+        }
+	if (chk->waitend < time(NULL)) {return 1;}
+    }
+    return 1; // EOF
+}
 void	GetSDTEITInfo(FILE *infile,SECcache *secs,int count)
 {
 	SVT_CONTROL	*svtcur ;
@@ -77,14 +120,14 @@ void	GetSDTEITInfo(FILE *infile,SECcache *secs,int count)
 			case 0x26: // EIT(地デジ)
 			case 0x27: // EIT(地デジ)
 				if (sdtflg) {
-					ret = dumpEIT2(bsecs->buf,svttop);
+					ret = dumpEIT2(bsecs->buf,svttop,NULL);
 					if (ret == 0) sdtflg = 0;
 				}
 				break;
 			case 0x14: // TDT
-				dumpTDT(bsecs->buf);
+				dumpTDT(bsecs->buf,NULL);
 				break;
-			case 0x23: // TDT
+			case 0x23: // SDTT
 		//		ret = dumpSDTT(bsecs->buf);
 				break;
 		}
@@ -256,12 +299,12 @@ void	dumpXML(FILE *outfile,char *bs_cs_grch)
 
 int main(int argc, char *argv[])
 {
-
 	FILE *infile = stdin;
 	FILE *outfile = stdout;
 	char *file;
 	int   inclose = 0;
 	int   outclose = 0;
+	int	ret;
 	SECcache   secs[SECCOUNT];
 
 	/* 興味のあるpidを指定 */
@@ -272,16 +315,41 @@ int main(int argc, char *argv[])
 	secs[3].pid = 0x23; /* TDT */
 	secs[4].pid = 0x28; /* TDT */
 	secs[5].pid = 0x10; /* NIT */
-	secs[6].pid = 0x23; /* SDTT */
+	secs[6].pid = 0x13; /* RST */
 	secs[7].pid = 0x26;
 	secs[8].pid = 0x27;
 
-	if(argc == 4){
+	if (argc > 2) {
 		file = argv[2];
 		if(strcmp(file, "-")) {
 			infile = fopen(file, "r");
 			inclose = 1;
 		}
+	if(infile == NULL){
+		fprintf(stderr, "Can't open file: %s\n", file);
+		return 1;
+	}
+	}
+
+	if(argc == 6 && ((strcmp(argv[1], "check") == 0)||(strcmp(argv[1],"wait"))==0)){
+		EITCHECK chk;
+		memset(&chk,0,sizeof(EITCHECK));
+		chk.svid = atoi(argv[3]);
+		chk.evid = atoi(argv[4]);
+		if (strcmp(argv[1],"check")==0) {
+			chk.starttime = str2timet(argv[5]);
+			chk.waitend = time(NULL) + 11;
+		}
+		else {
+			chk.waitend = time(NULL) + atoi(argv[5]);
+		}
+		ret = CheckEIT(infile,secs, SECCOUNT,&chk);
+		if (inclose) fclose(infile);
+		// 0..ok 1..fail
+		return ret;
+	}
+
+	if(argc == 4){
 		if(strcmp(argv[3], "-")) {
 			outfile = fopen(argv[3], "w+");
 			outclose = 1;
@@ -289,8 +357,8 @@ int main(int argc, char *argv[])
 	}else{
 		fprintf(stdout, "Usage : %s {/BS|/CS|csv} <tsFile> <outfile>\n", argv[0]);
 		fprintf(stdout, "Usage : %s <GR Channel> <tsFile> <outfile>\n", argv[0]);
-		fprintf(stdout, "Usage : %s check <device> <sid> <eventid>\n", argv[0]);
-		fprintf(stdout, "Usage : %s wait <device> <sid> <eventid>\n", argv[0]);
+		fprintf(stdout, "Usage : %s check <device> <sid> <eventid> <eventtime>\n", argv[0]);
+		fprintf(stdout, "Usage : %s wait <device> <sid> <eventid> <maxwaitsec>\n", argv[0]);
 		fprintf(stdout, "\n");
 		fprintf(stdout, "  GR Channel Channel identifier (ex. 27)\n");
 		fprintf(stdout, "  /BS        BS mode\n");
@@ -306,14 +374,7 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 
-	if(infile == NULL){
-		fprintf(stderr, "Can't open file: %s\n", file);
-		return 1;
-	}
 
-	if(((strcmp(argv[1], "check") == 0)||(strcmp(argv[1],"wait"))==0)){
-		return 1;
-	}
 
 	svttop = calloc(1, sizeof(SVT_CONTROL));
 	GetSDTEITInfo(infile, secs, SECCOUNT);

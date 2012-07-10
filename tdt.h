@@ -11,7 +11,7 @@
 extern "C"{
 #endif /* __cplusplus */
 
-	void dumpTDT(unsigned char *data);
+	void dumpTDT(unsigned char *data,EITCHECK *eitcheck);
 
 #ifdef __cplusplus
 }

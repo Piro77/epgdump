@@ -143,8 +143,7 @@ extern "C"{
 	int parseEEVTDitem(unsigned char *data, EEVTDitem *desc, EIT_CONTROL *eitcur) ;
 	int parseEEVTDtail(unsigned char *data, EEVTDtail *desc) ;
 
-	void dumpEIT(unsigned char *data, int serv_id, int original_network_id, int transport_stream_id, EIT_CONTROL *eittop);
-	int  dumpEIT2(unsigned char *data, SVT_CONTROL *svt);
+	int  dumpEIT2(unsigned char *data, SVT_CONTROL *svt,EITCHECK *chk);
 
 
 #ifdef __cplusplus

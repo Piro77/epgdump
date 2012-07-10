@@ -197,3 +197,32 @@ double getTimeDiff(time_t tottime)
 	gettimeofday( &timeofday, NULL );
 	return (double)tottime-(double)timeofday.tv_sec+(double)timeofday.tv_usec*1e-6;
 }
+
+
+/*
+ *   YYYY/MM/DD HH:MM:SS -> time_t
+ *   YYYY-MM-DDTHH:MM:SS -> time_t
+ *
+ */
+time_t str2timet(char *str)
+{
+  int len;
+  struct tm tms;
+
+  if (!str) return 0;
+  len = strlen(str);
+  if (len == 0) return 0;
+
+  memset(&tms, 0, sizeof(struct tm));
+
+  if(len >= 19 && (str[4] == '-')||(str[4] == '/')) {
+    tms.tm_year = atoi(str) - 1900;
+    tms.tm_mon  = atoi(str+5)-1;
+    tms.tm_mday = atoi(str+8);
+    tms.tm_hour = atoi(str+11);
+    tms.tm_min = atoi(str+14);
+    tms.tm_sec = atoi(str+17);
+    return mktime(&tms);
+  }
+  return 0;
+}
