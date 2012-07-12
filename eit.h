@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "util.h"
 #include "ts_ctl.h"
@@ -27,7 +28,7 @@ typedef struct _EIThead {
 
 typedef struct _EITbody {
 	int event_id;
-	char start_time[5];
+	unsigned char start_time[5];
 	unsigned char duration[3];
 	int running_status;
 	int free_CA_mode;

@@ -35,7 +35,7 @@ struct _EITEXTDESC {
 };
 struct _CURRENTNEXT {
 	short	event_id;
-	char	start_time[5];
+	unsigned char	start_time[5];
 	char	duration[3];
 	char	running_status;
 };

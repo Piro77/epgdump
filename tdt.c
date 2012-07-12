@@ -13,7 +13,7 @@ void dumpTDT(unsigned char *ptr,EITCHECK *chk)
 	int loop_len = 0;
 	int boff;
 	int table_id,section_length,wk;
-	char JST_time[6];
+	unsigned char JST_time[6];
 
 	boff = 0;
 	table_id = getBit(ptr, &boff, 8);
@@ -21,15 +21,13 @@ void dumpTDT(unsigned char *ptr,EITCHECK *chk)
 	wk = getBit(ptr, &boff, 4);
 	section_length = getBit(ptr,&boff,12);
 	memcpy(JST_time, ptr + (boff / 8),5);
-    boff += 40;
+	boff += 40;
 
-    if (chk) {
-        chk->tdttime = getStartTime(JST_time);
-	printf("[%s]\n",strTime(getStartTime(JST_time),"%Y/%m/%d %H:%M:%S"));
-    }
+	if (chk) {
+		chk->tdttime = getStartTime(JST_time);
+	}
 #ifdef DEBUG
-	printf("Table %x jst [%s] diff [%f]\n",table_id,strTime(getStartTime(JST_time),"%Y/%m/%d %H:%M:%S"),getTimeDiff(getStartTime(JST_time)));
+	printf("[%s]\n",strTime(getStartTime(JST_time),"%Y/%m/%d %H:%M:%S"));
 #endif
-
 	return;
 }
