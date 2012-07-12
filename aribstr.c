@@ -1,3 +1,7 @@
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -318,7 +322,7 @@ const DWORD PutKanjiChar(TCHAR *lpszDst, const WORD wCode)
 
 	fptr = code;
 	tptr = xcode;
-	iconv(cd, (char **)&fptr, &inbyte, &tptr, &outbyte);
+	iconv(cd, (ICONV_CONST char **)&fptr, &inbyte, &tptr, &outbyte);
 
 	iconv_close(cd);
 

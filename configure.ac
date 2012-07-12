@@ -33,7 +33,7 @@ AC_TYPE_SIZE_T
 
 # Checks for library functions.
 AC_FUNC_MKTIME
-AC_CHECK_FUNCS([gettimeofday memmove memset strstr])
+AC_CHECK_FUNCS([gettimeofday memmove memset strstr strdup])
 
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT

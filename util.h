@@ -18,7 +18,7 @@ extern "C"{
 	int getDurationSec(unsigned char *duration);
 	char *strTime(time_t tx,char *format);
 	double getTimeDiff(time_t);
-    time_t str2timet(char *str);
+	time_t str2timet(char *str);
 
 #ifdef __cplusplus
 }

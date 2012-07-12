@@ -215,7 +215,7 @@ time_t str2timet(char *str)
 
   memset(&tms, 0, sizeof(struct tm));
 
-  if(len >= 19 && (str[4] == '-')||(str[4] == '/')) {
+  if((len >= 19) && ((str[4] == '-')||(str[4] == '/'))) {
     tms.tm_year = atoi(str) - 1900;
     tms.tm_mon  = atoi(str+5)-1;
     tms.tm_mday = atoi(str+8);
