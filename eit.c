@@ -677,7 +677,7 @@ int dumpEIT2(unsigned char *ptr, SVT_CONTROL *svttop,EITCHECK *chk)
                             strncpy(cur->audiodesc[ix].langcode,audioComponentDesc.ISO_639_language_code,3);
                             if (audioComponentDesc.ES_multi_lingual_flag) {
                                 strcat(cur->audiodesc[ix].langcode,"_");
-                                strncat(cur->audiodesc[ix].langcode,audioComponentDesc.ISO_639_language_code,3);
+                                strncat(cur->audiodesc[ix].langcode,audioComponentDesc.ISO_639_language_code2,3);
                             }
                             if (audioComponentDesc.content)
                                 cur->audiodesc[ix].audiodesc = strdup(audioComponentDesc.content);

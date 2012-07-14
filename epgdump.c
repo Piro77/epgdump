@@ -207,6 +207,7 @@ void	dumpXML(FILE *outfile,char *bs_cs_grch)
 	struct	tm	*endtl ;
 	char	cendtime[32];
 	char	cstarttime[32];
+	int	i;
 
 
 	fprintf(outfile, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
@@ -223,11 +224,14 @@ void	dumpXML(FILE *outfile,char *bs_cs_grch)
 		strcpy(ServiceName, svtcur->servicename);
 		xmlspecialchars(ServiceName);
 
-		fprintf(outfile, "  <channel id=\"%s_%d\">\n",bs_cs_grch, svtcur->event_id);
+		fprintf(outfile, "  <channel id=\"%s_%d\" transport_stream_id=\"%d\" original_network_id=\"%d\" service_id=\"%d\">\n",bs_cs_grch, svtcur->event_id,svtcur->transport_stream_id,svtcur->original_network_id,svtcur->event_id);
 		fprintf(outfile, "    <display-name lang=\"ja_JP\">%s</display-name>\n", ServiceName);
-#if 0
-		fprintf(outfile, "    <id ts=\"%d\" on=\"%d\" sv=\"%d\" frequency=\"%d\"/>\n",svtcur->original_network_id,svtcur->transport_stream_id,svtcur->event_id,svtcur->frequency);
-#endif
+		if (svtcur->frequency > 0) {
+			fprintf(outfile, "    <satelliteinfo>\n");
+			fprintf(outfile, "       <frequency>%d</frequency>\n",svtcur->frequency);
+			fprintf(outfile, "       <TP>%s</TP>\n",getTP(svtcur->frequency));
+			fprintf(outfile, "    </satelliteinfo>\n");
+		}
 		fprintf(outfile, "  </channel>\n");
 		svtcur=svtcur->next;
 	}
@@ -278,9 +282,13 @@ void	dumpXML(FILE *outfile,char *bs_cs_grch)
 			strftime(cendtime, (sizeof(cendtime) - 1), "%Y%m%d%H%M%S", endtl);
 			strftime(cstarttime, (sizeof(cstarttime) - 1), "%Y%m%d%H%M%S", &tl);
 			
-			fprintf(outfile, "  <programme start=\"%s +0900\" stop=\"%s +0900\" channel=\"%s_%d\">\n",
+			fprintf(outfile, "  <programme start=\"%s +0900\" stop=\"%s +0900\" channel=\"%s_%d\" ",
 				cstarttime, cendtime, bs_cs_grch,svtcur->event_id);
-			
+			fprintf(outfile, "transport_stream_id=\"%d\" original_network_id=\"%d\" service_id=\"%d\" event_id=\"%d\">\n",
+				svtcur->transport_stream_id,
+				svtcur->original_network_id,
+				svtcur->event_id,eitcur->event_id);
+
 			fprintf(outfile, "    <title lang=\"ja_JP\">%s</title>\n", title);
 			
 			fprintf(outfile, "    <desc lang=\"ja_JP\">%s</desc>\n", subtitle);
@@ -288,6 +296,41 @@ void	dumpXML(FILE *outfile,char *bs_cs_grch)
 			fprintf(outfile, "    <category lang=\"ja_JP\">%s</category>\n", Category);
 			
 			fprintf(outfile, "    <category lang=\"en\">%s</category>\n", ContentCatList[(eitcur->content_type >> 4)].english);
+
+			fprintf(outfile, "    <subcategory id=\"%d\">%s</subcategory>\n",eitcur->content_type, getContentCat(eitcur->content_type));
+
+			fprintf(outfile, "    <video id=\"%d\">\n",(unsigned char)eitcur->video);
+			fprintf(outfile, "       <resolution>%s</resolution>\n",getVideoResolution(eitcur->video));
+			fprintf(outfile, "       <aspect>%s</aspect>\n",getVideoAspect(eitcur->video));
+			fprintf(outfile, "    </video>\n");
+			for(i=0;i<2;i++) {
+				if (eitcur->audiodesc[i].audiotype > 0) {
+					fprintf(outfile, "    <audio id=\"%d\">\n",(unsigned char)eitcur->audiodesc[i].audiotype);
+					fprintf(outfile, "       <desc>%s</desc>\n",getAudioComponentDescStr(eitcur->audiodesc[i].audiotype));
+					fprintf(outfile, "       <lang>%s</lang>\n",eitcur->audiodesc[i].langcode);
+					fprintf(outfile, "       <extdesc>%s</extdesc>\n",eitcur->audiodesc[i].audiodesc?eitcur->audiodesc[i].audiodesc:"");
+					fprintf(outfile, "    </audio>\n");
+				}
+			}
+			if (eitcur->eitextcnt>0) {
+				char *p;
+				fprintf(outfile, "    <extdesc>\n");
+				for(i=0;i<eitcur->eitextcnt;i++) {
+					if (eitcur->eitextdesc[i].item_description) {
+						p = realloc(eitcur->eitextdesc[i].item_description,(strlen(eitcur->eitextdesc[i].item_description)*2)+1);
+						xmlspecialchars(p);
+						fprintf(outfile, "     <item_description>%s</item_description>\n",p);
+						free(p);
+					}
+					if (eitcur->eitextdesc[i].item) {
+						p = realloc(eitcur->eitextdesc[i].item,(strlen(eitcur->eitextdesc[i].item)*2)+1);
+						xmlspecialchars(p);
+						fprintf(outfile, "     <item>%s</item>\n",p);
+						free(p);
+					}
+				}
+				fprintf(outfile, "    </extdesc>\n");
+			}
 			
 			fprintf(outfile, "  </programme>\n");
 			eitcur=eitcur->next;

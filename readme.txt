@@ -7,10 +7,10 @@ https://github.com/Piro77/epgdump
 ・取得EIT情報の増加
 ・BS/CSのテーブル不要化
 ・スケジュール対応コード（イベント待ち）
+・xml出力変更
 
 TODO
 ・ジャンルコードの取り込み
-・xml出力変更
 ・TOTによる時刻合わせ
 
 
