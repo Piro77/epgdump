@@ -225,7 +225,7 @@ retry:
 		*/
 
 		/* 興味のあるpidか確認 */
-		for(int i = 0;i < size; i++) {
+		for(i = 0;i < size; i++) {
 			if(secs[i].pid == pk.pid) {
 				secs[i].cur = pk;
 				/* 途中処理中か最初か? */

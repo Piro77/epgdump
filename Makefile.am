@@ -11,6 +11,21 @@ sdt.c \
 ts.c \
 tdt.c \
 util.c
+
+noinst_HEADERS = \
+aribstr.h \
+eit.h \
+nit.h \
+sdt.h \
+tdt.h \
+util.h \
+ts.h \
+ts_ctl.h \
+xmldata.c
+
+EXTRA_DIST = \
+readme.txt
+
 epgdump_LDFLAGS = @LIBICONV@
-epgdump_CFLAGS = -std=c99
+epgdump_CFLAGS =
 
