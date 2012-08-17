@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.68])
-AC_INIT([epgdump], [0.1.0], [piro77@gmail.com])
+AC_INIT([epgdump], [0.1.1], [piro77@gmail.com])
 AM_INIT_AUTOMAKE([foreign])
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST

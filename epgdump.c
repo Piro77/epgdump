@@ -224,12 +224,15 @@ void	dumpXML(FILE *outfile,char *bs_cs_grch)
 		strcpy(ServiceName, svtcur->servicename);
 		xmlspecialchars(ServiceName);
 
-		fprintf(outfile, "  <channel id=\"%s_%d\" transport_stream_id=\"%d\" original_network_id=\"%d\" service_id=\"%d\">\n",bs_cs_grch, svtcur->event_id,svtcur->transport_stream_id,svtcur->original_network_id,svtcur->event_id);
+		fprintf(outfile, "  <channel id=\"%s_%d\" transport_stream_id=\"%d\" original_network_id=\"%d\" service_id=\"%d\">\n",bs_cs_grch?bs_cs_grch:getTSID2BSCS(svtcur->transport_stream_id), svtcur->event_id,svtcur->transport_stream_id,svtcur->original_network_id,svtcur->event_id);
 		fprintf(outfile, "    <display-name lang=\"ja_JP\">%s</display-name>\n", ServiceName);
-		if (svtcur->frequency > 0) {
+		if (svtcur->original_network_id < 0x0010) {
 			fprintf(outfile, "    <satelliteinfo>\n");
-			fprintf(outfile, "       <frequency>%d</frequency>\n",svtcur->frequency);
-			fprintf(outfile, "       <TP>%s</TP>\n",getTP(svtcur->frequency));
+            if (svtcur->frequency > 0) {
+			    fprintf(outfile, "       <frequency>%d</frequency>\n",svtcur->frequency);
+            }
+			fprintf(outfile, "       <TP>%s%d</TP>\n",getTSID2BSCS(svtcur->transport_stream_id),getTSID2TP(svtcur->transport_stream_id));
+			fprintf(outfile, "       <SLOT>%d</SLOT>\n",getTSID2SLOT(svtcur->transport_stream_id));
 			fprintf(outfile, "    </satelliteinfo>\n");
 		}
 		fprintf(outfile, "  </channel>\n");
@@ -283,7 +286,7 @@ void	dumpXML(FILE *outfile,char *bs_cs_grch)
 			strftime(cstarttime, (sizeof(cstarttime) - 1), "%Y%m%d%H%M%S", &tl);
 			
 			fprintf(outfile, "  <programme start=\"%s +0900\" stop=\"%s +0900\" channel=\"%s_%d\" ",
-				cstarttime, cendtime, bs_cs_grch,svtcur->event_id);
+				cstarttime, cendtime, bs_cs_grch?bs_cs_grch:getTSID2BSCS(svtcur->transport_stream_id),svtcur->event_id);
 			fprintf(outfile, "transport_stream_id=\"%d\" original_network_id=\"%d\" service_id=\"%d\" event_id=\"%d\">\n",
 				svtcur->transport_stream_id,
 				svtcur->original_network_id,
@@ -423,9 +426,9 @@ int main(int argc, char *argv[])
 	GetSDTEITInfo(infile, secs, SECCOUNT);
 
 	if(strcmp(argv[1], "/BS") == 0){
-		dumpXML(outfile,"BS");
+		dumpXML(outfile,NULL);
 	}else if(strcmp(argv[1], "/CS") == 0){
-		dumpXML(outfile,"CS");
+		dumpXML(outfile,NULL);
 	}else if(strcmp(argv[1], "csv") == 0){
 		dumpCSV(outfile);
 	}else{

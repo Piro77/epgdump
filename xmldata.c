@@ -346,5 +346,22 @@ static char *getPolarization(int polarization)
     }
 return ret;
 }
+/* arib tr-b14 割り当てガイドラインより*/
+static unsigned short getTSID2TP(unsigned short tsid) {
+    return (tsid & 0x01f0)>>4;
+}
+static unsigned short getTSID2SLOT(unsigned short tsid) {
+    return tsid & 0x0007;
+}
+static char *getTSID2BSCS(unsigned short tsid) {
+	char *ret;
+	ret="";
+	switch ((tsid & 0xf000)>>12) {
+		case 4: ret = "BS";break;
+		case 7: ret = "CS";break;
+		default:break;
+	}
+	return ret;
+}
 
 #endif
