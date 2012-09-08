@@ -8,6 +8,7 @@ eit.c \
 epgdump.c \
 nit.c \
 sdt.c \
+bit.c \
 ts.c \
 tdt.c \
 util.c
@@ -17,6 +18,7 @@ aribstr.h \
 eit.h \
 nit.h \
 sdt.h \
+bit.h \
 tdt.h \
 util.h \
 ts.h \

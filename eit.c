@@ -759,7 +759,7 @@ int dumpEIT2(unsigned char *ptr, SVT_CONTROL *svttop,EITCHECK *chk)
                     if (len > 0)
                         if (cur) cur->content_type = (unsigned char)(contentDesc.content[0]);
                 default:
-                    len = parseOTHERdesc(ptr);
+                    len = parseOTHERdesc(ptr,NULL);
                     break;
             }
 

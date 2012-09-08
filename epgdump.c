@@ -15,6 +15,7 @@
 #include "eit.h"
 #include "nit.h"
 #include "tdt.h"
+#include "bit.h"
 #include "ts_ctl.h"
 
 #include "xmldata.c"
@@ -130,6 +131,12 @@ void	GetSDTEITInfo(FILE *infile,SECcache *secs,int count)
 			case 0x23: // SDTT
 		//		ret = dumpSDTT(bsecs->buf);
 				break;
+			case 0x13: // RST
+				printf("RST\n");
+				break;
+			case 0x24: // BIT
+				//dumpBIT(bsecs->buf,svttop);
+				break;
 		}
 
 	}
@@ -197,7 +204,7 @@ void	dumpCSV(FILE *outfile)
 	}
 	return ;
 }
-void	dumpXML(FILE *outfile,char *bs_cs_grch)
+void	dumpXML(FILE *outfile)
 {
 	SVT_CONTROL	*svtcur ;
 	EIT_CONTROL	*eitcur ;
@@ -224,7 +231,7 @@ void	dumpXML(FILE *outfile,char *bs_cs_grch)
 		strcpy(ServiceName, svtcur->servicename);
 		xmlspecialchars(ServiceName);
 
-		fprintf(outfile, "  <channel id=\"%s_%d\" transport_stream_id=\"%d\" original_network_id=\"%d\" service_id=\"%d\">\n",bs_cs_grch?bs_cs_grch:getTSID2BSCS(svtcur->transport_stream_id), svtcur->event_id,svtcur->transport_stream_id,svtcur->original_network_id,svtcur->event_id);
+		fprintf(outfile, "  <channel id=\"%s_%d\" transport_stream_id=\"%d\" original_network_id=\"%d\" service_id=\"%d\">\n",getBSCSGR(svtcur), svtcur->event_id,svtcur->transport_stream_id,svtcur->original_network_id,svtcur->event_id);
 		fprintf(outfile, "    <display-name lang=\"ja_JP\">%s</display-name>\n", ServiceName);
 		if (svtcur->original_network_id < 0x0010) {
 			fprintf(outfile, "    <satelliteinfo>\n");
@@ -286,7 +293,7 @@ void	dumpXML(FILE *outfile,char *bs_cs_grch)
 			strftime(cstarttime, (sizeof(cstarttime) - 1), "%Y%m%d%H%M%S", &tl);
 			
 			fprintf(outfile, "  <programme start=\"%s +0900\" stop=\"%s +0900\" channel=\"%s_%d\" ",
-				cstarttime, cendtime, bs_cs_grch?bs_cs_grch:getTSID2BSCS(svtcur->transport_stream_id),svtcur->event_id);
+				cstarttime, cendtime, getBSCSGR(svtcur),svtcur->event_id);
 			fprintf(outfile, "transport_stream_id=\"%d\" original_network_id=\"%d\" service_id=\"%d\" event_id=\"%d\">\n",
 				svtcur->transport_stream_id,
 				svtcur->original_network_id,
@@ -347,7 +354,7 @@ int main(int argc, char *argv[])
 {
 	FILE *infile = stdin;
 	FILE *outfile = stdout;
-	char *file;
+	char *file,*fileout;
 	int   inclose = 0;
 	int   outclose = 0;
 	int	ret;
@@ -358,15 +365,23 @@ int main(int argc, char *argv[])
 	secs[0].pid = 0x11; /* SDT */
 	secs[1].pid = 0x12; /* EIT */
 	secs[2].pid = 0x14; /* TDT */
-	secs[3].pid = 0x23; /* TDT */
-	secs[4].pid = 0x28; /* TDT */
+	secs[3].pid = 0x23; /* SDTT */
+	secs[4].pid = 0x28; /* SDTT */
 	secs[5].pid = 0x10; /* NIT */
 	secs[6].pid = 0x13; /* RST */
-	secs[7].pid = 0x26;
-	secs[8].pid = 0x27;
+	secs[7].pid = 0x24; /* BIT */
 
+    file = NULL;
+    fileout= NULL;
 	if (argc > 2) {
-		file = argv[2];
+    if (argc == 3) {
+        file = argv[1];
+        fileout = argv[2];
+    }
+    else {
+        file = argv[2];
+        fileout = argv[3];
+   }
 		if(strcmp(file, "-")) {
 			infile = fopen(file, "r");
 			inclose = 1;
@@ -395,24 +410,16 @@ int main(int argc, char *argv[])
 		return ret;
 	}
 
-	if(argc == 4){
-		if(strcmp(argv[3], "-")) {
-			outfile = fopen(argv[3], "w+");
+	if(argc >= 3){
+		if(strcmp(fileout, "-")) {
+			outfile = fopen(fileout, "w+");
 			outclose = 1;
 		}
 	}else{
-		fprintf(stdout, "Usage : %s {/BS|/CS|csv} <tsFile> <outfile>\n", argv[0]);
-		fprintf(stdout, "Usage : %s <GR Channel> <tsFile> <outfile>\n", argv[0]);
+		fprintf(stdout, "Usage : %s <tsFile> <outfile>\n", argv[0]);
+		fprintf(stdout, "Usage : %s csv <tsFile> <outfile>\n", argv[0]);
 		fprintf(stdout, "Usage : %s check <device> <sid> <eventid> <eventtime>\n", argv[0]);
 		fprintf(stdout, "Usage : %s wait <device> <sid> <eventid> <maxwaitsec>\n", argv[0]);
-		fprintf(stdout, "\n");
-		fprintf(stdout, "  GR Channel Channel identifier (ex. 27)\n");
-		fprintf(stdout, "  /BS        BS mode\n");
-		fprintf(stdout, "               This mode reads the data of all BS TV stations\n");
-		fprintf(stdout, "               from one TS data.\n");
-		fprintf(stdout, "  /CS        CS mode\n");
-		fprintf(stdout, "               This mode reads the data of two or more CS TV stations\n");
-		fprintf(stdout, "               from one TS data.\n");
 		fprintf(stdout, "  csv        csv  output mode\n");
 		fprintf(stdout, "  check      check event\n");
 		fprintf(stdout, "  wait       wait  event\n");
@@ -423,16 +430,13 @@ int main(int argc, char *argv[])
 
 
 	svttop = calloc(1, sizeof(SVT_CONTROL));
+
 	GetSDTEITInfo(infile, secs, SECCOUNT);
 
-	if(strcmp(argv[1], "/BS") == 0){
-		dumpXML(outfile,NULL);
-	}else if(strcmp(argv[1], "/CS") == 0){
-		dumpXML(outfile,NULL);
-	}else if(strcmp(argv[1], "csv") == 0){
+	if(strcmp(argv[1], "csv") == 0){
 		dumpCSV(outfile);
 	}else{
-		dumpXML(outfile,argv[1]);
+		dumpXML(outfile);
 	}
 	if(inclose) fclose(infile);
 	if(outclose) fclose(outfile);

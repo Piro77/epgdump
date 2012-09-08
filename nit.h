@@ -55,6 +55,27 @@ typedef struct _SatelliteDeliverySystemDescriptor {
 	unsigned char	FEC_inner;
 }SatelliteDeliverySystemDescriptor;
 
+typedef struct _TerrestrialDeliverySystemDescriptor {
+        short		area_code;
+        unsigned char	guard_interval;
+        unsigned char	transmission_mode;
+        unsigned short  frequency;
+}TerrestrialDeliverySystemDescriptor;
+
+typedef struct _TSInformationTransmissionType {
+        unsigned char	transmission_type_info;
+        unsigned char	num_of_service;
+        unsigned short  service_id[256];
+}TSInformationTransmissionType;
+
+typedef struct _TSInformationDescriptor {
+        unsigned char	remote_control_key_id;
+        unsigned char	length_of_ts_name;
+        unsigned char	transmission_type_count;
+        char            ts_name_char[MAXSECLEN];
+        TSInformationTransmissionType    tstype[4];
+}TSInformationDescriptor;
+
 #ifdef __cplusplus
 extern "C"{
 #endif /* __cplusplus */
@@ -68,3 +89,4 @@ extern "C"{
 #endif /* __cplusplus */
 
 #endif
+

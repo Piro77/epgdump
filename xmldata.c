@@ -273,4 +273,18 @@ static char *getTSID2BSCS(unsigned short tsid) {
 	return ret;
 }
 
+static unsigned short freqToCH(unsigned short freq)
+{
+ return ((freq/7)-473)/6 + 13;
+}
+
+static char *getBSCSGR(SVT_CONTROL *svtcur) {
+	static char ret[10];
+	ret[0]=0;
+    if (svtcur->original_network_id < 0x10) {
+        return getTSID2BSCS(svtcur->transport_stream_id);
+    }
+    sprintf(ret,"GR%d",svtcur->remote_control_key_id);
+    return ret;
+}
 #endif

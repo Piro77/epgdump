@@ -85,7 +85,7 @@ void getStr(char *tostr, unsigned char *byte, int *pbit, int len) {
   
 }
 
-int parseOTHERdesc(unsigned char *data) {
+int parseOTHERdesc(unsigned char *data,unsigned char *tag) {
 	int boff = 0;
 	int descriptor_tag;
 	int descriptor_length;
@@ -93,7 +93,12 @@ int parseOTHERdesc(unsigned char *data) {
 	descriptor_tag = getBit(data, &boff, 8);
 	descriptor_length = getBit(data, &boff, 8);
 
-	/* printf("other desc_tag:0x%x\n", descriptor_tag); */
+	if (tag) {
+		*tag = descriptor_tag;
+#ifdef DEBUG
+		printf("other desc_tag:0x%x len %d\n", descriptor_tag,descriptor_length);
+#endif
+	}
 
 	return descriptor_length + 2;
 }

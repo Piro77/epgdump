@@ -3,21 +3,21 @@ epgdump改良版
 https://github.com/Piro77/epgdump
 
 使い方
-epgdump /CS cs.ts cs.xml
-epgdump /BS bs.ts bs.xml
-epgdump GR32 gr32.ts gr32.xml
+epgdump cs.ts cs.xml
+epgdump bs.ts bs.xml
+epgdump gr32.ts gr32.xml
 
-引数１・CS/BS/GR種別
-        出力のチャンネルIDに利用します。後ろに_サービスIDが付加されます。
-        BS/CSについては引数とは無関係にTSIDより識別します。
-        例:CS_101
-           BS_237
-           GR32_23122
-引数２・TSファイル名
-引数３・出力XMLファイル名（−で標準出力）
+引数１・TSファイル名
+引数２・出力XMLファイル名（−で標準出力）
 
 TSを読み込んでxmlを出力します。xmlの形式は独自なので他のepgdump
 の置き換えには使えません。
+以前の第一引数だったCS,BS,GRの区別は廃止されTSファイルから識別します。
+GRはチャンネル番号の変わりにリモコンIDを出力します。
+
+例:CS_101
+   BS_237
+   GR2_23122
 
 epgdump csv gr32.ts gr32.csv
 
@@ -62,9 +62,9 @@ epgdump wait /dev/ptx0.t0 21234 4384 3600
 ・BS/CSのテーブル不要化
 ・スケジュール対応コード（イベント待ち）
 ・xml出力変更
+・NITからリモコンIDを取得(GR+リモコンID)・引数変更
 
 TODO
-・NITからリモコンIDを取得(GR+リモコンID)・第一引数のダミー化
 ・番組表が埋まったらEXITする(ストリーム読み込み)
 ・ジャンルコードの取り込み
 ・TOTによる時刻合わせ

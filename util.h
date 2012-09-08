@@ -12,7 +12,7 @@ extern "C"{
 	int   strrep(char *, char *, char *);
 	int   getBit(unsigned char *byte, int *pbit, int gbit);
 	void  getStr(char *tostr, unsigned char *byte, int *pbit, int len);
-	int   parseOTHERdesc(unsigned char *data);
+	int   parseOTHERdesc(unsigned char *data,unsigned char *tag);
 
 	time_t getStartTime(unsigned char *starttime);
 	int getDurationSec(unsigned char *duration);

@@ -8,6 +8,7 @@
 #define	EIT_CHECKOK	2
 #define	EIT_CHECKNG	3
 
+typedef struct  _NIT_CONTROL    NIT_CONTROL;
 typedef	struct	_SVT_CONTROL	SVT_CONTROL;
 typedef	struct	_EIT_CONTROL	EIT_CONTROL;
 typedef struct	_CURRENTNEXT	CURRENTNEXT;
@@ -51,6 +52,7 @@ struct	_SVT_CONTROL{
 	CURRENTNEXT	cnev[2];
 	char		haveeitschedule;		// EITスケジュールがあるか。
 	int		frequency;
+    int     remote_control_key_id;              // リモコンID（地デジ）
 };
 
 struct	_EIT_CONTROL{
