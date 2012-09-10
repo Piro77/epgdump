@@ -592,8 +592,8 @@ int dumpEIT2(unsigned char *ptr, SVT_CONTROL *svttop,EITCHECK *chk)
         memset(&save_eevtitem, 0, sizeof(EEVTDitem));
 
         len = parseEITbody(ptr, &eitb);
-        if (chk) {
-            if (eith.table_id == 0x4e) {
+        if (eith.table_id == 0x4e) {
+            if (chk) {
                 if (eith.section_number < 2) {
                     if ((svtcur->cnev[eith.section_number].event_id  != (short)eitb.event_id) ||
                             (memcmp(svtcur->cnev[eith.section_number].start_time,eitb.start_time,5)!=0) ||
