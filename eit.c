@@ -706,6 +706,7 @@ int dumpEIT2(unsigned char *ptr, SVT_CONTROL *svttop,EITCHECK *chk)
                             cur->ess = eitb.dss ;
                             cur->table_id = eith.table_id ;
                             cur->freeCA = eitb.free_CA_mode;
+                            cur->duration = getDurationSec(eitb.duration);
                             enqueue(eittop, cur);
                             if ((eith.table_id >= 0x50) && (!svtcur->haveeitschedule)) {
                                 svtcur->haveeitschedule=1;

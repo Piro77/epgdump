@@ -81,5 +81,6 @@ struct	_EIT_CONTROL{
 	char	video;				// 映像情報
 	AUDIODESC	audiodesc[2];		// 音声情報
 	char	freeCA;				// スクランブル
+	int	duration;			// 時間
 };
 #endif

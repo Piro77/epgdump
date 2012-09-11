@@ -294,10 +294,10 @@ void	dumpXML(FILE *outfile)
 			
 			fprintf(outfile, "  <programme start=\"%s +0900\" stop=\"%s +0900\" channel=\"%s_%d\" ",
 				cstarttime, cendtime, getBSCSGR(svtcur),svtcur->event_id);
-			fprintf(outfile, "transport_stream_id=\"%d\" original_network_id=\"%d\" service_id=\"%d\" event_id=\"%d\">\n",
+			fprintf(outfile, "transport_stream_id=\"%d\" original_network_id=\"%d\" service_id=\"%d\" event_id=\"%d\" duration=\"%d\">\n",
 				svtcur->transport_stream_id,
 				svtcur->original_network_id,
-				svtcur->event_id,eitcur->event_id);
+				svtcur->event_id,eitcur->event_id,eitcur->duration);
 
 			fprintf(outfile, "    <title lang=\"ja_JP\">%s</title>\n", title);
 			
