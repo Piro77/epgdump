@@ -308,6 +308,7 @@ void	dumpXML(FILE *outfile)
 			fprintf(outfile, "    <category lang=\"en\">%s</category>\n", ContentCatList[(eitcur->content_type >> 4)].english);
 
 			fprintf(outfile, "    <subcategory id=\"%d\">%s</subcategory>\n",eitcur->content_type, getContentCat(eitcur->content_type));
+			fprintf(outfile, "    <freeCA>%d</freeCA>\n",eitcur->freeCA);
 
 			fprintf(outfile, "    <video id=\"%d\">\n",(unsigned char)eitcur->video);
 			fprintf(outfile, "       <resolution>%s</resolution>\n",getVideoResolution(eitcur->video));
