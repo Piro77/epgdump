@@ -62,18 +62,6 @@ struct	_EIT_CONTROL{
 	int		servid ;
 	int		event_id ;			// イベントID
 	int		content_type ;		// コンテントタイプ
-    int		yy;
-    int		mm;
-    int		dd;
-    int		hh;
-    int		hm;
-	int		ss;
-	int		dhh;
-	int		dhm;
-	int		dss;
-	int		ehh;
-	int		emm;
-	int		ess;
 	char	*title ;			// タイトル
 	char	*subtitle ;			// サブタイトル
 	short  eitextcnt;
@@ -82,5 +70,6 @@ struct	_EIT_CONTROL{
 	AUDIODESC	audiodesc[2];		// 音声情報
 	char	freeCA;				// スクランブル
 	int	duration;			// 時間
+	time_t	start_time;			// 開始時刻
 };
 #endif

@@ -7,8 +7,6 @@
 char		*subtitle_cnv_str[] = {
     NULL
 };
-static void timecmp(int *,int *,int *,
-        int, int, int);
 int parseEIThead(unsigned char *data, EIThead *h) {
     int boff = 0;
 
@@ -56,49 +54,6 @@ int parseEITbody(unsigned char *data, EITbody *b)
     b->free_CA_mode = getBit(data, &boff, 1);
     b->descriptors_loop_length = getBit(data, &boff, 12);
 
-    /* 日付変換 */
-    tnum = (b->start_time[0] & 0xFF) << 8 | (b->start_time[1] & 0xFF);
-
-    b->yy = (tnum - 15078.2) / 365.25;
-    b->mm = ((tnum - 14956.1) - (int)(b->yy * 365.25)) / 30.6001;
-    b->dd = (tnum - 14956) - (int)(b->yy * 365.25) - (int)(b->mm * 30.6001);
-
-    if(b->dd == 0) {
-        printf("aa");
-    }
-
-    if(b->mm == 14 || b->mm == 15) {
-        b->yy += 1;
-        b->mm = b->mm - 1 - (1 * 12);
-    } else {
-        b->mm = b->mm - 1;
-    }
-
-    b->yy += 1900;
-
-    memset(buf, '\0', sizeof(buf));
-    sprintf(buf, "%x", b->start_time[2]);
-    b->hh = atoi(buf);
-    memset(buf, '\0', sizeof(buf));
-    sprintf(buf, "%x", b->start_time[3]);
-    b->hm = atoi(buf);
-    memset(buf, '\0', sizeof(buf));
-    sprintf(buf, "%x", b->start_time[4]);
-    b->ss = atoi(buf);
-
-    if((b->duration[0] == 0xFF) && (b->duration[1] == 0xFF) && (b->duration[2] == 0xFF)){
-        b->dhh = b->dhm = b->dss = 0;
-    }else{
-        memset(buf, '\0', sizeof(buf));
-        sprintf(buf, "%x", b->duration[0]);
-        b->dhh = atoi(buf);
-        memset(buf, '\0', sizeof(buf));
-        sprintf(buf, "%x", b->duration[1]);
-        b->dhm = atoi(buf);
-        memset(buf, '\0', sizeof(buf));
-        sprintf(buf, "%x", b->duration[2]);
-        b->dss = atoi(buf);
-    }
     return 12;
 }
 
@@ -464,7 +419,7 @@ void	enqueue(EIT_CONTROL *top, EIT_CONTROL *eitptr)
 {
     EIT_CONTROL	*cur ;
     cur = top ;
-    int		rc ;
+    time_t		rc ;
 
     if(top->next == NULL){
         top->next = eitptr ;
@@ -473,9 +428,7 @@ void	enqueue(EIT_CONTROL *top, EIT_CONTROL *eitptr)
     }
     cur = top->next ;
     while(cur != NULL){
-        rc = memcmp(&cur->yy, &eitptr->yy, (sizeof(int) * 3));
-        if(rc == 0){
-            rc = memcmp(&cur->hh, &eitptr->hh, (sizeof(int) * 3));
+        rc = cur->start_time - eitptr->start_time;
             if(rc == 0){
                 free(eitptr->title);
                 free(eitptr->subtitle);
@@ -495,17 +448,6 @@ void	enqueue(EIT_CONTROL *top, EIT_CONTROL *eitptr)
                 conv_title_subtitle(eitptr);
                 return ;
             }
-        }
-        if(rc > 0){
-            if(cur->prev != 0){
-                cur->prev->next = eitptr ;
-                eitptr->prev = cur->prev ;
-            }
-            cur->prev = eitptr ;
-            eitptr->next = cur ;
-            conv_title_subtitle(eitptr);
-            return ;
-        }
         if(cur->next == NULL){
             cur->next = eitptr ;
             eitptr->prev = cur ;
@@ -518,24 +460,6 @@ void	enqueue(EIT_CONTROL *top, EIT_CONTROL *eitptr)
 
 }
 
-static void timecmp(int *thh, int *tmm, int *tss,
-        int dhh, int dmm, int dss) {
-
-    int ama;
-
-    *tss += dss;
-    ama = *tss % 60;
-    *tmm += (*tss / 60);
-    *tss = ama;
-
-    *tmm += dmm;
-    ama   = *tmm % 60;
-    *thh += (*tmm / 60);
-    *tmm  = ama;
-
-    *thh += dhh;
-
-}
 int dumpEIT2(unsigned char *ptr, SVT_CONTROL *svttop,EITCHECK *chk)
 {
     EIThead  eith;
@@ -556,8 +480,6 @@ int dumpEIT2(unsigned char *ptr, SVT_CONTROL *svttop,EITCHECK *chk)
     int loop_len = 0;
     int loop_blen = 0;
     int loop_elen = 0;
-
-    int ehh, emm, ess;
 
     /* EIT */
     len = parseEIThead(ptr, &eith); 
@@ -639,11 +561,6 @@ int dumpEIT2(unsigned char *ptr, SVT_CONTROL *svttop,EITCHECK *chk)
             }
             return EIT_OK;
         }
-        ehh = eitb.hh;
-        emm = eitb.hm;
-        ess = eitb.ss;
-
-        timecmp(&ehh, &emm, &ess, eitb.dhh, eitb.dhm, eitb.dss);
         cur = searcheit(eittop, eith.service_id, eitb.event_id);
 
         ptr += len;
@@ -695,18 +612,10 @@ int dumpEIT2(unsigned char *ptr, SVT_CONTROL *svttop,EITCHECK *chk)
                             memcpy(cur->title, sevtd.event_name, strlen(sevtd.event_name));
                             cur->subtitle = calloc(1, (strlen(sevtd.text) + 1));
                             memcpy(cur->subtitle, sevtd.text, strlen(sevtd.text));
-                            cur->yy = eitb.yy;
-                            cur->mm = eitb.mm;
-                            cur->dd = eitb.dd;
-                            cur->hh = eitb.hh;
-                            cur->hm = eitb.hm;
-                            cur->ss = eitb.ss;
-                            cur->ehh = eitb.dhh;
-                            cur->emm = eitb.dhm;
-                            cur->ess = eitb.dss ;
                             cur->table_id = eith.table_id ;
                             cur->freeCA = eitb.free_CA_mode;
                             cur->duration = getDurationSec(eitb.duration);
+                            cur->start_time = getStartTime(eitb.start_time);
                             enqueue(eittop, cur);
                             if ((eith.table_id >= 0x50) && (!svtcur->haveeitschedule)) {
                                 svtcur->haveeitschedule=1;

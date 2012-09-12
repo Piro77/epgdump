@@ -160,13 +160,13 @@ void	dumpCSV(FILE *outfile)
 				continue ;
 			}
 			fprintf(outfile,"%s,0x%x,0x%x,%d,%d,",svtcur->servicename,svtcur->original_network_id,svtcur->transport_stream_id,svtcur->event_id,svtcur->frequency);
-			fprintf(outfile,"0x%x,0x%x,%s,%s,%04d/%02d/%02d %02d:%02d:%02d,%02d:%02d:%02d,\"%s\",\"%s\",",
+			fprintf(outfile,"0x%x,0x%x,%s,%s,%s,%d,\"%s\",\"%s\",",
 					eitcur->event_id,
 					eitcur->content_type,
 					ContentCatList[(eitcur->content_type >> 4)].japanese,
 					getContentCat(eitcur->content_type),
-					eitcur->yy,eitcur->mm,eitcur->dd,eitcur->hh,eitcur->hm,eitcur->ss,
-					eitcur->ehh,eitcur->emm,eitcur->ess,
+					strTime(eitcur->start_time,"%Y/%m/%d %H:%M:%S"),
+					eitcur->duration,
 					eitcur->title,
 					eitcur->subtitle);
             if (eitcur->eitextcnt>0) {
@@ -269,28 +269,10 @@ void	dumpXML(FILE *outfile)
 			strcpy(Category, ContentCatList[(eitcur->content_type >> 4)].japanese);
 			xmlspecialchars(Category);
 
-			tl.tm_sec = eitcur->ss ;
-			tl.tm_min = eitcur->hm ;
-			tl.tm_hour = eitcur->hh ;
-			tl.tm_mday = eitcur->dd ;
-			tl.tm_mon = (eitcur->mm - 1);
-			tl.tm_year = (eitcur->yy - 1900);
-			tl.tm_wday = 0;
-			tl.tm_isdst = 0;
-			tl.tm_yday = 0;
-			l_time = mktime(&tl);
-			if((eitcur->ehh == 0) && (eitcur->emm == 0) && (eitcur->ess == 0)){
-				(void)time(&l_time);
-				end_time = l_time + (60 * 5);		// ５分後に設定
-				endtl = localtime(&end_time);
-			}else{
-				end_time = l_time + eitcur->ehh * 3600 + eitcur->emm * 60 + eitcur->ess;
-				endtl = localtime(&end_time);
-			}
 			memset(cendtime, '\0', sizeof(cendtime));
 			memset(cstarttime, '\0', sizeof(cstarttime));
-			strftime(cendtime, (sizeof(cendtime) - 1), "%Y%m%d%H%M%S", endtl);
-			strftime(cstarttime, (sizeof(cstarttime) - 1), "%Y%m%d%H%M%S", &tl);
+			strcpy(cendtime, strTime(eitcur->start_time + eitcur->duration , "%Y%m%d%H%M%S"));
+			strcpy(cstarttime, strTime(eitcur->start_time, "%Y%m%d%H%M%S"));
 			
 			fprintf(outfile, "  <programme start=\"%s +0900\" stop=\"%s +0900\" channel=\"%s_%d\" ",
 				cstarttime, cendtime, getBSCSGR(svtcur),svtcur->event_id);
