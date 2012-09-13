@@ -373,9 +373,6 @@ static char *getContentStr(unsigned char cat,unsigned char usernibble,int kbn,in
         cat = usernibble;
         if (cat > 0x2f) return ret;
     }
-    if (cat == 0xe0) {
-         printf("cat %x\n",usernibble);
-    }
 
     switch(kbn) {
         case CONTENT_LARGE:

@@ -19,14 +19,15 @@ GRはチャンネル番号の変わりにリモコンIDを出力します。
    BS_237
    GR2_23122
 
-epgdump csv gr32.ts gr32.csv
+epgdump csv  gr32.ts gr32.csv
+epgdump json gr32.ts gr32.json
 
-引数１・csv(固定)
+引数１・csv json
 引数２・TSファイル名
-引数３・出力csvファイル名（−で標準出力）
+引数３・出力ファイル名（−で標準出力）
 
-XMLの代わりにCSV形式で出力します。
-引数が3つあり、第一引数がcsvでない場合xml出力として動作します。
+XMLの代わりにCSV形式、JSON形式で出力します。
+引数が3つあり、第一引数がcsv,jsonでない場合xml出力として動作します。
 
 epgdump check /dev/ptx0.t0 21234 4384 2012-07-15T11:30:00
 
