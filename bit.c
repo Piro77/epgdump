@@ -43,9 +43,9 @@ int parseBITbody(unsigned char *data, BITbody *b) {
 
 	return boff/8;
 }
-int parseSIParameterDescriptor(unsigned char *data, SIParameterDescriptor *d) {
+int parseBITFirstLoop(unsigned char *data, SIParameterDescriptor *d,int flen) {
 	int boff = 0;
-    int i,j,tag,len,looplen,numt,wk;
+    int i,j,tag,alen,len,looplen,numt,wk;
 
     memset(d,0,sizeof(SIParameterDescriptor));
 
@@ -55,7 +55,7 @@ int parseSIParameterDescriptor(unsigned char *data, SIParameterDescriptor *d) {
     d->parameter_version = getBit(data, &boff, 8);
     d->update_time = getBit(data, &boff, 16);
 
-    looplen = len;
+    looplen = flen;
     i=0;
     while(looplen > 0) {
         d->sipt[i].table_id = getBit(data, &boff, 8);
@@ -91,6 +91,55 @@ int parseSIParameterDescriptor(unsigned char *data, SIParameterDescriptor *d) {
         		getStr(d->sipt[i].table_description_byte, data, &boff,d->sipt[i].table_description_length);
 			break;
 	}
+	looplen = looplen - d->sipt[i].table_description_length;
+	i++;
+    }
+return flen;
+}
+int parseSIParameterDescriptor(unsigned char *data, SIParameterDescriptor *d) {
+	int boff = 0;
+    int i,j,tag,alen,len,looplen,numt,wk;
+
+    memset(d,0,sizeof(SIParameterDescriptor));
+
+    tag = getBit(data, &boff, 8);
+    len = getBit(data, &boff, 8);
+
+    d->parameter_version = getBit(data, &boff, 8);
+    d->update_time = getBit(data, &boff, 16);
+
+    looplen = len;
+    i=0;
+    while(looplen > 0) {
+        d->sipt[i].table_id = getBit(data, &boff, 8);
+        d->sipt[i].table_description_length = getBit(data, &boff, 8);
+	switch(d->sipt[i].table_id) 
+	{
+		case 0xc3:  //SDTT
+            wk = getBit(data, &boff, 16);
+			printf("SDTT CYCLE %d\n",wk);
+			break;
+		case 0xc8:  //CDT
+            wk = getBit(data, &boff, 16);
+			printf("CDT CYCLE %d\n",wk);
+			break;
+		case 0x4E:  //HEIT
+            wk = getBit(data, &boff, 8);
+			printf("HEIT CYCLE %d\n",wk);
+            wk = getBit(data, &boff, 8);
+			printf("MEIT CYCLE %d\n",wk);
+            wk = getBit(data, &boff, 8);
+			printf("LEIT CYCLE %d\n",wk);
+            wk = getBit(data, &boff, 4);
+			printf("MEIT EvNUM %d\n",wk);
+            wk = getBit(data, &boff, 4);
+			printf("LEIT EvNUM %d\n",wk);
+			break;
+		case 0x50:  //HEIT
+		case 0x58:  //HEIT
+			printf("2ndHEIT LOOP %d\n",d->sipt[i].table_description_length/6);
+        		getStr(d->sipt[i].table_description_byte, data, &boff,d->sipt[i].table_description_length);
+	}
 /*
  loop
    media_type 2
@@ -103,29 +152,11 @@ int parseSIParameterDescriptor(unsigned char *data, SIParameterDescriptor *d) {
       num_of_segment 8
       cycle          8
 */
-        looplen = looplen - d->sipt[i].table_description_length - 2;
-        i++;
-        if (d->sipt[i-1].table_id == 0x50) break;
-    }
-#ifdef DEBUG
-    printf("%x \n",getBit(data, &boff, 8));
-    printf("%d \n",getBit(data, &boff, 4));
-#endif
-    looplen = getBit(data, &boff, 12);
-
-    while(looplen > 0) {
-        d->sipt[i].table_id = getBit(data, &boff, 8);
-if (d->sipt[i].table_id == 0xff ) break;
-        d->sipt[i].table_description_length = getBit(data, &boff, 8);
-        getStr(d->sipt[i].table_description_byte, data, &boff,d->sipt[i].table_description_length);
-#ifdef DEBUG
-        printf("2Table %x len %d\n",d->sipt[i].table_id ,d->sipt[i].table_description_length);
-#endif
-        looplen = looplen - d->sipt[i].table_description_length - 2;
+printf("loop minus %d tag %x\n",d->sipt[i].table_description_length,d->sipt[i].table_id);
+        looplen = looplen - d->sipt[i].table_description_length + 2;
         i++;
     }
-
-    return len+2;
+    return boff/8+2;
 }
 
 void dumpBIT(unsigned char *ptr, SVT_CONTROL *top)
@@ -140,18 +171,33 @@ void dumpBIT(unsigned char *ptr, SVT_CONTROL *top)
 
 	int len = 0;
 	int loop_len = 0;
+	int boff = 0;
 
 	/* BIT */
 	len = parseBIThead(ptr, &bith); 
 	ptr += len;
 	loop_len = bith.section_length - (len - 3 + 4); // 3は共通ヘッダ長 4はCRC
+
+	len = parseBITFirstLoop(ptr,&sipd,bith.first_descriptors_length);
+	ptr += len;
+	loop_len = loop_len - len;
+	//skip broarcaster loop??
 	while(loop_len > 0) {
-		len = parseOTHERdesc(ptr,&tag);
-        switch(tag) {
-            case 0xd7:
-                len = parseSIParameterDescriptor(ptr,&sipd);
-                break;
-        }
+		boff=0;
+		tag = getBit(ptr,&boff,8);
+		switch(tag) {
+			case 0xff:
+				len = 3;
+				break;
+
+			case 0xd7:
+				len =parseSIParameterDescriptor(ptr,&sipd);
+				break;
+			default:
+				len = parseOTHERdesc(ptr,NULL);
+				break;
+		}
+printf("BIT TAG %x len %d\n",tag,len);
 		ptr += len;
 		loop_len -= len;
 	}
