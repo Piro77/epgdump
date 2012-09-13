@@ -80,7 +80,11 @@ typedef struct _AudioComponentDesc {
 typedef struct _ContentDesc {
 	int descriptor_tag;
 	int descriptor_length;
-	char content[MAXSECLEN];
+	unsigned char numcontent;
+	unsigned char content[7];
+	unsigned char usernibble[7];
+	unsigned char numattachinfo;
+	unsigned char attachinfo[7];
 } ContentDesc;
 
 typedef struct _SeriesDesc {

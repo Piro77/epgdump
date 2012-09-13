@@ -1,10 +1,22 @@
 #ifndef XMLDATA_C
 #define XMLDATA_C 1
 
+#define CONTENT_LARGE	0
+#define CONTENT_MIDDLE	1
+#define CONTENT_EX_CS	2
+#define CONTENT_EX_BS	3
+#define CONTENT_EX_GR	4
+#define CONTENT_LANG_JA	0
+#define CONTENT_LANG_EN	1
+
 typedef		struct	_ContentTYPE{
 	char	*japanese ;
 	char	*english ;
 }CONTENT_TYPE;
+
+typedef		struct _ContentTYPEA {
+	char	*lang[2];
+}CONTENT_TYPEA;
 
 #define		CAT_COUNT		16
 static  CONTENT_TYPE	ContentCatList[CAT_COUNT] = {
@@ -26,105 +38,369 @@ static  CONTENT_TYPE	ContentCatList[CAT_COUNT] = {
 	{ "その他", "etc" } //その他
 };
 /* コンテント記述子　ジャンル中分類 */
-static char *getContentCat(int cat) {
+#define		MIDDLECAT_COUNT		256
+static  CONTENT_TYPE	ContentMiddleCatList[MIDDLECAT_COUNT] = {
+ {"定時・総合","Regular/General"},
+ {"天気","Weather"},
+ {"特集・ドキュメント","Special topic/documentary"},
+ {"政治・国会","Politics/diet"},
+ {"経済・市況","Economy/market"},
+ {"海外・国際","Overseas"},
+ {"解説","Commentary"},
+ {"討論・会談","Discussion/meeting"},
+ {"報道特番","Special news report"},
+ {"ローカル・地域","Local"},
+ {"交通","Traffic"},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"スポーツニュース","Sports news"},
+ {"野球","Baseball"},
+ {"サッカー","soccer"},
+ {"ゴルフ","Golf"},
+ {"その他の球技","Other ball games"},
+ {"相撲・格闘技","Sumo/fighting sports"},
+ {"オリンピック・国際大会","Olympic/international games"},
+ {"マラソン・陸上・水泳","Marathon/field and track/swimming"},
+ {"モータースポーツ","Motor sports"},
+ {"マリン・ウインタースポーツ","Marine/winter sports"},
+ {"競馬・公営競技","Horse race/public sports"},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"その他","Other"},
+ {"芸能・ワイドショー","Show business/tabloid show"},
+ {"ファッション","Fashion"},
+ {"暮らし・住まい","Life/residence"},
+ {"健康・医療","Health/medical care"},
+ {"ショッピング・通販","Shopping/catalog shopping"},
+ {"グルメ・料理","Gourmet/cooking show"},
+ {"イベント","Events"},
+ {"番組紹介・お知らせ","Promotion/information"},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"その他","Others"},
+ {"国内ドラマ","Japanese drama"},
+ {"海外ドラマ","Overseas drama"},
+ {"時代劇","Historical drama"},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"その他","Others"},
+ {"国内ロック・ポップス","Japanese rock/pops"},
+ {"海外ロック・ポップス","Overseas rock/pops"},
+ {"クラシック・オペラ","Classical/opera"},
+ {"ジャズ・フュージョン","Jazz/fusion"},
+ {"歌謡曲・演歌","Japanese popular song/ballad (Enka)"},
+ {"ライブ・コンサート","Live show/concert"},
+ {"ランキング・リクエスト","Ranking/Request show"},
+ {"カラオケ・のど自慢","Karaoke/singing contest"},
+ {"民謡・邦楽","Folk/Japanese music"},
+ {"童謡・キッズ","Children's song"},
+ {"民族音楽・ワールドミュージック","Ethnic/world music"},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"その他","Other"},
+ {"クイズ","Quiz"},
+ {"ゲーム","Game"},
+ {"トークバラエティ","Talk show"},
+ {"お笑い・コメディ","Comedy"},
+ {"音楽バラエティ","Musical variety show"},
+ {"旅バラエティ","Travel variety show"},
+ {"料理バラエティ","Cooking variety show"},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"その他","Other"},
+ {"洋画","Overseas movie"},
+ {"邦画","Japanese movie"},
+ {"アニメ","Animation movie"},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"その他","Other"},
+ {"国内アニメ","Japanese animation"},
+ {"海外アニメ","Overseas animation"},
+ {"特撮","Special effects program"},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"その他","Other"},
+ {"社会・時事","Social/topical news"},
+ {"歴史・紀行","History/travel"},
+ {"自然・動物・環境","Nature/animal/environment"},
+ {"宇宙・科学・医学","Universe/science/science of medicine"},
+ {"カルチャー・伝統文化","Culture/traditional culture"},
+ {"文学・文芸","Literature/liberal arts"},
+ {"スポーツ","Sports"},
+ {"ドキュメンタリー全般","General documentary"},
+ {"インタビュー・討論","Interview/discussion"},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"その他","Other"},
+ {"現代劇・新劇","Modern play"},
+ {"ミュージカル","Musical"},
+ {"ダンス・バレエ","Dance/ballet"},
+ {"落語・演芸","Comic monologue (Rakugo)/ entertainment"},
+ {"歌舞伎・古典","Kabuki/classical play"},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"その他","Other"},
+ {"旅・釣り・アウトドア","Travel/fishing/outdoors"},
+ {"園芸・ペット・手芸","Gardening/pet/ handicraft"},
+ {"音楽・美術・工芸","Music/art/ artifice"},
+ {"囲碁・将棋","Japanese go/chess (Shogi)"},
+ {"麻雀・パチンコ","Mah-jong/Pachinko"},
+ {"車・オートバイ","Automobile/motorcycle"},
+ {"コンピュータ・ＴＶゲーム","Computer/TV game"},
+ {"会話・語学","Conversation/language"},
+ {"幼児・小学生","Infants/primary school students"},
+ {"中学生・高校生","Junior/senior high school students"},
+ {"大学生・受験","College/preparatory students"},
+ {"生涯教育・資格","Lifelong education/qulification"},
+ {"教育問題","Educational problem"},
+ {"",""},
+ {"",""},
+ {"その他","Other"},
+ {"高齢者","Aged persons"},
+ {"障害者","Handicapped person"},
+ {"社会福祉","Social welfare"},
+ {"ボランティア","Volunteers"},
+ {"手話","Sign language"},
+ {"文字（字幕）","Texts (caption)"},
+ {"音声解説","Audio commentary"},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"その他","Other"}
+};
+#define		CSCAT_COUNT		3
+static  CONTENT_TYPE	ContentCSCatList[CSCAT_COUNT] = {
+ {"スポーツ","Sports"},
+ {"洋画","Overseas movie"},
+ {"邦画","Japanese movie"}
+};
+#define		CSMIDDLECAT_COUNT		48
+static  CONTENT_TYPE	ContentCSMiddleCatList[CSMIDDLECAT_COUNT] = {
+ {"テニス","Tennis"},
+ {"バスケットボール","Basketball"},
+ {"ラグビー","Rugby"},
+ {"アメリカンフットボール","Football"},
+ {"ボクシング","Boxing"},
+ {"プロレス","Professional wrestling"},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"",""},
+ {"その他","Others"},
+ {"アクション","Action movies"},
+ {"SF／ファンタジー","SF/fantasy movies"},
+ {"コメディー","Comedy movies"},
+ {"サスペンス／ミステリー","Suspense/mystery movies"},
+ {"恋愛／ロマンス","Love/romance movies"},
+ {"ホラー／スリラー","Horror/thriller movies"},
+ {"ウエスタン","Western movies"},
+ {"ドラマ／社会派ドラマ","Drama/social drama"},
+ {"アニメーション","Animation movies"},
+ {"ドキュメンタリー","Documentary movies"},
+ {"アドベンチャー／冒険","Adventure movies"},
+ {"ミュージカル／音楽映画","Musical movies"},
+ {"ホームドラマ","Domestic drama"},
+ {"",""},
+ {"",""},
+ {"その他","Others"},
+ {"アクション","Action movies"},
+ {"SF／ファンタジー","SF/fantasy movies"},
+ {"お笑い／コメディー","Comedy"},
+ {"サスペンス／ミステリー","Suspense/mystery movies"},
+ {"恋愛／ロマンス","Love/romance movies"},
+ {"ホラー／スリラー","Horror/thriller movies"},
+ {"青春／学園／アイドル","Young/campus/idol dramas"},
+ {"任侠／時代劇","Japanese gangster/costume drama"},
+ {"アニメーション","Animation movies"},
+ {"ドキュメンタリー","Documentary movies"},
+ {"アドベンチャー／冒険","Adventure movies"},
+ {"ミュージカル／音楽映画","Musical movies"},
+ {"ホームドラマ","Domestic drama"},
+ {"",""},
+ {"",""},
+ {"その他","Others"}
+};
+
+
+static char *getContentStr(unsigned char cat,unsigned char usernibble,int kbn,int lang) {
+    CONTENT_TYPEA *large;
+    CONTENT_TYPEA *middle;
+    char *ret = "";
+
+    if (lang > 2) return ret;
+    if (kbn > 2) return ret;
+
+
+    large = (CONTENT_TYPEA *)ContentCatList;
+    middle = (CONTENT_TYPEA *)ContentMiddleCatList;
+    if (cat == 0xe1) {
+        large = (CONTENT_TYPEA *)ContentCSCatList;
+        middle = (CONTENT_TYPEA *)ContentCSMiddleCatList;
+        cat = usernibble;
+        if (cat > 0x2f) return ret;
+    }
+    if (cat == 0xe0) {
+         printf("cat %x\n",usernibble);
+    }
+
+    switch(kbn) {
+        case CONTENT_LARGE:
+            return large[cat >> 4].lang[lang];
+            break;
+        case CONTENT_MIDDLE:
+            return middle[cat].lang[lang];
+            break;
+    }
+    return ret;
+}
+/* コンテント記述子 0xe0 番組付属情報 */
+static char *getAttachInfo(unsigned char cat) {
 	char *ret;
 	ret=NULL;
 	switch(cat) {
-		case 0x00: ret = "定時・総合"; break;
-		case 0x01: ret = "天気"; break;
-		case 0x02: ret = "特集・ドキュメント"; break;
-		case 0x03: ret = "政治・国会"; break;
-		case 0x04: ret = "経済・市況"; break;
-		case 0x05: ret = "海外・国際"; break;
-		case 0x06: ret = "解説"; break;
-		case 0x07: ret = "討論・会談"; break;
-		case 0x08: ret = "報道特番"; break;
-		case 0x09: ret = "ローカル・地域"; break;
-		case 0x0a: ret = "交通"; break;
-		case 0x10: ret = "スポーツニュース"; break;
-		case 0x11: ret = "野球"; break;
-		case 0x12: ret = "サッカー"; break;
-		case 0x13: ret = "ゴルフ"; break;
-		case 0x14: ret = "その他の球技"; break;
-		case 0x15: ret = "相撲・格闘技"; break;
-		case 0x16: ret = "オリンピック・国際大会"; break;
-		case 0x17: ret = "マラソン・陸上・水泳"; break;
-		case 0x18: ret = "モータースポーツ"; break;
-		case 0x19: ret = "マリン・ウインタースポーツ"; break;
-		case 0x1a: ret = "競馬・公営競技"; break;
-		case 0x1f: ret = "その他"; break;
-		case 0x20: ret = "芸能・ワイドショー"; break;
-		case 0x21: ret = "ファッション"; break;
-		case 0x22: ret = "暮らし・住まい"; break;
-		case 0x23: ret = "健康・医療"; break;
-		case 0x24: ret = "ショッピング・通販"; break;
-		case 0x25: ret = "グルメ・料理"; break;
-		case 0x26: ret = "イベント"; break;
-		case 0x27: ret = "番組紹介・お知らせ"; break;
-		case 0x2f: ret = "その他"; break;
-		case 0x30: ret = "国内ドラマ"; break;
-		case 0x31: ret = "海外ドラマ"; break;
-		case 0x32: ret = "時代劇"; break;
-		case 0x3f: ret = "その他"; break;
-		case 0x40: ret = "国内ロック・ポップス"; break;
-		case 0x41: ret = "海外ロック・ポップス"; break;
-		case 0x42: ret = "クラシック・オペラ"; break;
-		case 0x43: ret = "ジャズ・フュージョン"; break;
-		case 0x44: ret = "歌謡曲・演歌"; break;
-		case 0x45: ret = "ライブ・コンサート"; break;
-		case 0x46: ret = "ランキング・リクエスト"; break;
-		case 0x47: ret = "カラオケ・のど自慢"; break;
-		case 0x48: ret = "民謡・邦楽"; break;
-		case 0x49: ret = "童謡・キッズ"; break;
-		case 0x4a: ret = "民族音楽・ワールドミュージック"; break;
-		case 0x50: ret = "クイズ"; break;
-		case 0x51: ret = "ゲーム"; break;
-		case 0x52: ret = "トークバラエティ"; break;
-		case 0x53: ret = "お笑い・コメディ"; break;
-		case 0x54: ret = "音楽バラエティ"; break;
-		case 0x55: ret = "旅バラエティ"; break;
-		case 0x56: ret = "料理バラエティ"; break;
-		case 0x60: ret = "洋画"; break;
-		case 0x61: ret = "邦画"; break;
-		case 0x62: ret = "アニメ"; break;
-		case 0x70: ret = "国内アニメ"; break;
-		case 0x71: ret = "海外アニメ"; break;
-		case 0x72: ret = "特撮"; break;
-		case 0x80: ret = "社会・時事"; break;
-		case 0x81: ret = "歴史・紀行"; break;
-		case 0x82: ret = "自然・動物・環境"; break;
-		case 0x83: ret = "宇宙・科学・医学"; break;
-		case 0x84: ret = "カルチャー・伝統文化"; break;
-		case 0x85: ret = "文学・文芸"; break;
-		case 0x86: ret = "スポーツ"; break;
-		case 0x87: ret = "ドキュメンタリー全般"; break;
-		case 0x88: ret = "インタビュー・討論"; break;
-		case 0x90: ret = "現代劇・新劇"; break;
-		case 0x91: ret = "ミュージカル"; break;
-		case 0x92: ret = "ダンス・バレエ"; break;
-		case 0x93: ret = "落語・演芸"; break;
-		case 0x94: ret = "歌舞伎・古典"; break;
-		case 0xa0: ret = "旅・釣り・アウトドア"; break;
-		case 0xa1: ret = "園芸・ペット・手芸"; break;
-		case 0xa2: ret = "音楽・美術・工芸"; break;
-		case 0xa3: ret = "囲碁・将棋"; break;
-		case 0xa4: ret = "麻雀・パチンコ"; break;
-		case 0xa5: ret = "車・オートバイ"; break;
-		case 0xa6: ret = "コンピュータ・ＴＶゲーム"; break;
-		case 0xa7: ret = "会話・語学"; break;
-		case 0xa8: ret = "幼児・小学生"; break;
-		case 0xa9: ret = "中学生・高校生"; break;
-		case 0xaa: ret = "大学生・受験"; break;
-		case 0xab: ret = "生涯教育・資格"; break;
-		case 0xac: ret = "教育問題"; break;
-		case 0xb0: ret = "高齢者"; break;
-		case 0xb1: ret = "障害者"; break;
-		case 0xb2: ret = "社会福祉"; break;
-		case 0xb3: ret = "ボランティア"; break;
-		case 0xb4: ret = "手話"; break;
-		case 0xb5: ret = "文字（字幕）"; break;
-		case 0xb6: ret = "音声解説"; break;
-		default: ret="その他";
+		case 0x00: ret = "中止の可能性あり"; break;
+		case 0x01: ret = "延長の可能性あり"; break;
+		case 0x02: ret = "中断の可能性あり"; break;
+		case 0x03: ret = "同一シリーズの別話数放送の可能性あり"; break;
+		case 0x04: ret = "編成未定枠"; break;
+		case 0x05: ret = "繰り上げの可能性あり"; break;
+		case 0x10: ret = "中断ニュースあり"; break;
+		case 0x11: ret = "当該イベントに関連する臨時サービスあり"; break;
+		default: ret="";
 	}
 	return ret;
 }

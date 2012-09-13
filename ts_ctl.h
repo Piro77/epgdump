@@ -14,7 +14,7 @@ typedef	struct	_EIT_CONTROL	EIT_CONTROL;
 typedef struct	_CURRENTNEXT	CURRENTNEXT;
 typedef struct  _EITEXTDESC     EITEXTDESC;
 typedef struct	_AUDIODESC	AUDIODESC;
-typedef struct  _EITCHECK   EITCHECK;
+typedef struct  _EITCHECK	EITCHECK;
 
 struct _EITCHECK {          //イベントチェック用構造体
     int svid;               // 対象サービスID
@@ -61,7 +61,11 @@ struct	_EIT_CONTROL{
 	int		table_id ;
 	int		servid ;
 	int		event_id ;			// イベントID
-	int		content_type ;		// コンテントタイプ
+	unsigned char	numcontent;
+	unsigned char 	content[7];     //コンテントタイプ
+	unsigned char	usernibble[7];
+	unsigned char	numattachinfo;
+	unsigned char	attachinfo[7];  //番組付属情報
 	char	*title ;			// タイトル
 	char	*subtitle ;			// サブタイトル
 	short  eitextcnt;

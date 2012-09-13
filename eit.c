@@ -178,7 +178,7 @@ int parseAudioComponentDesc(unsigned char *data,AudioComponentDesc *desc) {
 }
 
 int parseContentDesc(unsigned char *data, ContentDesc *desc) {
-    int boff = 0;
+    int boff = 0,i,j;
 
     memset(desc, 0, sizeof(ContentDesc));
 
@@ -187,8 +187,20 @@ int parseContentDesc(unsigned char *data, ContentDesc *desc) {
         return -1;
     }
     desc->descriptor_length = getBit(data, &boff, 8);
-    memcpy(desc->content, data+(boff/8), desc->descriptor_length);
-    //getStr(desc->content, data, &boff, desc->descriptor_length);
+    desc->numcontent = desc->descriptor_length/2;
+    for(i=0,j=0;i<desc->numcontent;i++) {
+        desc->content[j] = getBit(data, &boff,8);
+        desc->usernibble[j] = getBit(data, &boff, 8);
+        if (desc->content[j] == 0xe0) {
+            desc->attachinfo[desc->numattachinfo] = desc->usernibble[j];
+            desc->numattachinfo = desc->numattachinfo + 1;
+            desc->content[j] = 0x00;
+            desc->usernibble[j] = 0x00;
+            continue;
+        }
+        j++;
+    }
+    desc->numcontent = desc->numcontent - desc->numattachinfo;
 #ifdef DEBUG
     unsigned char cn;
     printf("  Content 0x%02x\n",desc->content[0]);
@@ -666,8 +678,13 @@ int dumpEIT2(unsigned char *ptr, SVT_CONTROL *svttop,EITCHECK *chk)
 
                 case 0x54:
                     len = parseContentDesc(ptr, &contentDesc);
-                    if (len > 0)
-                        if (cur) cur->content_type = (unsigned char)(contentDesc.content[0]);
+                    if (len > 0 && cur) {
+                        cur->numcontent = contentDesc.numcontent;
+                        memcpy(cur->content,contentDesc.content,7);
+                        memcpy(cur->usernibble,contentDesc.usernibble,7);
+                        cur->numattachinfo = contentDesc.numattachinfo;
+                        memcpy(cur->attachinfo,contentDesc.attachinfo,7);
+                    }
                 default:
                     len = parseOTHERdesc(ptr,NULL);
                     break;

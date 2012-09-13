@@ -162,9 +162,9 @@ void	dumpCSV(FILE *outfile)
 			fprintf(outfile,"%s,0x%x,0x%x,%d,%d,",svtcur->servicename,svtcur->original_network_id,svtcur->transport_stream_id,svtcur->event_id,svtcur->frequency);
 			fprintf(outfile,"0x%x,0x%x,%s,%s,%s,%d,\"%s\",\"%s\",",
 					eitcur->event_id,
-					eitcur->content_type,
-					ContentCatList[(eitcur->content_type >> 4)].japanese,
-					getContentCat(eitcur->content_type),
+					eitcur->content[0],
+					ContentCatList[(eitcur->content[0] >> 4)].japanese,
+					ContentMiddleCatList[eitcur->content[0]].japanese,
 					strTime(eitcur->start_time,"%Y/%m/%d %H:%M:%S"),
 					eitcur->duration,
 					eitcur->title,
@@ -265,10 +265,6 @@ void	dumpXML(FILE *outfile)
 			if (eitcur->subtitle) strcpy(subtitle, eitcur->subtitle);
 			xmlspecialchars(subtitle);
 
-			memset(Category, '\0', sizeof(Category));
-			strcpy(Category, ContentCatList[(eitcur->content_type >> 4)].japanese);
-			xmlspecialchars(Category);
-
 			memset(cendtime, '\0', sizeof(cendtime));
 			memset(cstarttime, '\0', sizeof(cstarttime));
 			strcpy(cendtime, strTime(eitcur->start_time + eitcur->duration , "%Y%m%d%H%M%S"));
@@ -283,11 +279,17 @@ void	dumpXML(FILE *outfile)
 			
 			fprintf(outfile, "    <desc lang=\"ja_JP\">%s</desc>\n", subtitle);
 
-			fprintf(outfile, "    <category lang=\"ja_JP\">%s</category>\n", Category);
+			for(i=0;i<eitcur->numcontent;i++) {
+			fprintf(outfile, "    <category lang=\"ja_JP\">%s</category>\n",getContentStr(eitcur->content[i],eitcur->usernibble[i],CONTENT_LARGE,CONTENT_LANG_JA) );
 			
-			fprintf(outfile, "    <category lang=\"en\">%s</category>\n", ContentCatList[(eitcur->content_type >> 4)].english);
+			fprintf(outfile, "    <category lang=\"en\">%s</category>\n", getContentStr(eitcur->content[i],eitcur->usernibble[i],CONTENT_LARGE,CONTENT_LANG_EN));
 
-			fprintf(outfile, "    <subcategory id=\"%d\">%s</subcategory>\n",eitcur->content_type, getContentCat(eitcur->content_type));
+			fprintf(outfile, "    <category_middle lang=\"ja_JP\">%s</category_middle>\n",getContentStr(eitcur->content[i],eitcur->usernibble[i],CONTENT_MIDDLE,CONTENT_LANG_JA));
+			fprintf(outfile, "    <category_middle lang=\"en\">%s</category_middle>\n",getContentStr(eitcur->content[i],eitcur->usernibble[i],CONTENT_MIDDLE,CONTENT_LANG_EN));
+			}
+			for(i=0;i<eitcur->numattachinfo;i++) {
+				fprintf(outfile, "    <attachinfo>%s</attachinfo>\n",getAttachInfo(eitcur->attachinfo[i]));
+			}
 			fprintf(outfile, "    <freeCA>%d</freeCA>\n",eitcur->freeCA);
 
 			fprintf(outfile, "    <video id=\"%d\">\n",(unsigned char)eitcur->video);
@@ -330,6 +332,121 @@ void	dumpXML(FILE *outfile)
 	}
     fprintf(outfile, "</tv>\n");
 }
+
+void dumpJSON(FILE *outfile)
+{
+	SVT_CONTROL	*svtcur ;
+	EIT_CONTROL	*eitcur ;
+	int i;
+	char *svtcanma="";
+	char *eitcanma;
+	char *eitextcanma;
+
+	fprintf(outfile,"[");
+	svtcur=svttop->next;
+	while(svtcur != NULL) {
+		if (!svtcur->haveeitschedule) {
+			svtcur = svtcur->next;
+			continue;
+		}
+		fprintf(outfile,"%s{",svtcanma);
+		fprintf(outfile,"\"id\":\"%s_%d\",",getBSCSGR(svtcur),svtcur->event_id);
+		fprintf(outfile,"\"transport_stream_id\":%d,",svtcur->transport_stream_id);
+		fprintf(outfile,"\"original_network_id\":%d,",svtcur->original_network_id);
+		fprintf(outfile,"\"service_id\":%d,",svtcur->event_id);
+		fprintf(outfile,"\"name\":\"%s\",",svtcur->servicename);
+		if (svtcur->original_network_id < 0x0010) {
+			fprintf(outfile,"\"satelliteinfo\":{");
+			fprintf(outfile,"\"TP\":\"%s%d\",",getTSID2BSCS(svtcur->transport_stream_id),getTSID2TP(svtcur->transport_stream_id));
+			fprintf(outfile,"\"SLOT\":%d},",getTSID2SLOT(svtcur->transport_stream_id));
+		}
+		eitcur = svtcur->eit;
+		fprintf(outfile,"\"programs\":[");
+		eitcanma="";
+		while(eitcur != NULL){
+			if(!eitcur->servid){
+				eitcur = eitcur->next ;
+				continue ;
+			}
+			fprintf(outfile,"%s{",eitcanma);
+			fprintf(outfile,"\"channel\":\"%s_%d\",",getBSCSGR(svtcur),svtcur->event_id);
+			memset(title, '\0', sizeof(title));
+			if (eitcur->title) strcpy(title, eitcur->title);
+			strrep(title, "\"", "\\\"");
+			fprintf(outfile,"\"title\":\"%s\",",title);
+			memset(subtitle, '\0', sizeof(subtitle));
+			if (eitcur->subtitle) strcpy(subtitle, eitcur->subtitle);
+			strrep(subtitle, "\"", "\\\"");
+			fprintf(outfile,"\"detail\":\"%s\",",subtitle);
+
+			fprintf(outfile,"\"extdetail\":[");
+			eitextcanma="";
+			for(i=0;i<eitcur->eitextcnt;i++) {
+				if (eitcur->eitextdesc[i].item_description && eitcur->eitextdesc[i].item) {
+					strcpy(subtitle, eitcur->eitextdesc[i].item_description);
+					strrep(subtitle, "\"", "\\\"");
+					fprintf(outfile,"%s{\"item_description\":\"%s\",",eitextcanma,subtitle);
+			        memset(subtitle, '\0', sizeof(subtitle));
+					strcpy(subtitle, eitcur->eitextdesc[i].item);
+					strrep(subtitle, "\"", "\\\"");
+					fprintf(outfile,"\"item\":\"%s\"}",subtitle);
+					eitextcanma=",";
+				}
+			}
+			fprintf(outfile,"],");
+
+			fprintf(outfile,"\"start\":%d0000,",eitcur->start_time);
+			fprintf(outfile,"\"end\":%d0000,",eitcur->start_time+eitcur->duration);
+			fprintf(outfile,"\"duration\":%d,",eitcur->duration);
+
+			eitextcanma="";
+			fprintf(outfile,"\"category\":[");
+			for(i=0;i<eitcur->numcontent;i++) {
+				fprintf(outfile,"%s{",eitextcanma);
+				fprintf(outfile,"\"large\": { \"ja_JP\" : \"%s\", \"en\" : \"%s\"},",getContentStr(eitcur->content[i],eitcur->usernibble[i],CONTENT_LARGE,CONTENT_LANG_JA),getContentStr(eitcur->content[i],eitcur->usernibble[i],CONTENT_LARGE,CONTENT_LANG_EN));
+				fprintf(outfile,"\"middle\": { \"ja_JP\" : \"%s\", \"en\" : \"%s\"}}",getContentStr(eitcur->content[i],eitcur->usernibble[i],CONTENT_MIDDLE,CONTENT_LANG_JA),getContentStr(eitcur->content[i],eitcur->usernibble[i],CONTENT_MIDDLE,CONTENT_LANG_EN));
+				eitextcanma=",";
+			}
+			fprintf(outfile,"],");
+
+			eitextcanma="";
+			fprintf(outfile,"\"attachinfo\":[");
+			for(i=0;i<eitcur->numattachinfo;i++) {
+				fprintf(outfile,"%s\"%s\"",eitextcanma,getAttachInfo(eitcur->attachinfo[i]));
+				eitextcanma=",";
+			}
+			fprintf(outfile,"],");
+
+			fprintf(outfile,"\"video\":{");
+			fprintf(outfile,"\"resolution\":\"%s\",",getVideoResolution(eitcur->video));
+			fprintf(outfile,"\"aspect\":\"%s\"},",getVideoAspect(eitcur->video));
+
+			eitextcanma="";
+			fprintf(outfile,"\"audio\":[");
+			for(i=0;i<2;i++) {
+			if (eitcur->audiodesc[i].audiotype > 0) {
+					fprintf(outfile,"%s{\"type\":\"%s\",",eitextcanma,getAudioComponentDescStr(eitcur->audiodesc[i].audiotype));
+					fprintf(outfile,"\"langcode\":\"%s\",", eitcur->audiodesc[i].langcode);
+					fprintf(outfile,"\"extdesc\":\"%s\"}", eitcur->audiodesc[i].audiodesc?eitcur->audiodesc[i].audiodesc:"");
+					eitextcanma=",";
+				}
+			}
+			fprintf(outfile,"],");
+
+			fprintf(outfile,"\"freeCA\":%s,",eitcur->freeCA?"true":"false");
+			fprintf(outfile,"\"event_id\":%d",eitcur->event_id);
+			eitcur = eitcur->next ;
+			fprintf(outfile,"}");
+			eitcanma=",";
+		}
+		fprintf(outfile,"]");
+		svtcur  = svtcur->next;
+		fprintf(outfile,"}");
+		svtcanma=",";
+	}
+	fprintf(outfile,"]");
+}
+
 
 int main(int argc, char *argv[])
 {
@@ -398,10 +515,12 @@ int main(int argc, char *argv[])
 		}
 	}else{
 		fprintf(stdout, "Usage : %s <tsFile> <outfile>\n", argv[0]);
-		fprintf(stdout, "Usage : %s csv <tsFile> <outfile>\n", argv[0]);
+		fprintf(stdout, "Usage : %s csv  <tsFile> <outfile>\n", argv[0]);
+		fprintf(stdout, "Usage : %s json <tsFile> <outfile>\n", argv[0]);
 		fprintf(stdout, "Usage : %s check <device> <sid> <eventid> <eventtime>\n", argv[0]);
 		fprintf(stdout, "Usage : %s wait <device> <sid> <eventid> <maxwaitsec>\n", argv[0]);
 		fprintf(stdout, "  csv        csv  output mode\n");
+		fprintf(stdout, "  json       json output mode\n");
 		fprintf(stdout, "  check      check event\n");
 		fprintf(stdout, "  wait       wait  event\n");
 		fprintf(stdout, "VERSION : %s\n",VERSION);
@@ -416,6 +535,8 @@ int main(int argc, char *argv[])
 
 	if(strcmp(argv[1], "csv") == 0){
 		dumpCSV(outfile);
+	}else if (strcmp(argv[1], "json") == 0){
+		dumpJSON(outfile);
 	}else{
 		dumpXML(outfile);
 	}
