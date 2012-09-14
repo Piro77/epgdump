@@ -141,6 +141,36 @@ void	GetSDTEITInfo(FILE *infile,SECcache *secs,int count)
 
 	}
 }
+void	dumpChannel(FILE *outfile)
+{
+	SVT_CONTROL	*svtcur ;
+	char *p;
+	svtcur=svttop->next;
+	while(svtcur != NULL) {
+		if (!svtcur->haveeitschedule) {
+			svtcur = svtcur->next;
+			continue;
+		}
+		fprintf(outfile,"%d,", svtcur->event_id);
+		p = getBSCSGR(svtcur);
+		switch (p[0]) {
+			case 'G':
+				fprintf(outfile,"%s,",p);
+				break;
+			case 'B':
+				fprintf(outfile,"%s%d_%d,",p,
+					getTSID2TP(svtcur->transport_stream_id),
+					getTSID2SLOT(svtcur->transport_stream_id));
+				break;
+			case 'C':
+				fprintf(outfile,"%s%d,",p,
+					getTSID2TP(svtcur->transport_stream_id));
+				break;
+		}
+		fprintf(outfile,"%s\n",svtcur->servicename);
+		svtcur = svtcur->next;
+	}
+}
 void	dumpCSV(FILE *outfile)
 {
 	SVT_CONTROL	*svtcur ;
@@ -535,6 +565,8 @@ int main(int argc, char *argv[])
 
 	if(strcmp(argv[1], "csv") == 0){
 		dumpCSV(outfile);
+	}else if (strncmp(argv[1], "csvc",4) == 0){
+		dumpChannel(outfile);
 	}else if (strcmp(argv[1], "json") == 0){
 		dumpJSON(outfile);
 	}else{
