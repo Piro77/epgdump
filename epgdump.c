@@ -91,9 +91,10 @@ void	GetSDTEITInfo(FILE *infile,SECcache *secs,int count)
 	int 		pid;
 	SECcache  *bsecs;
 	int		sdtflg;
-	int ret;
+	int ret,maxcycle;
 
 	sdtflg=0;
+	maxcycle=0;
 
 	while((bsecs = readTS(infile, secs, count)) != NULL) {
 		pid = bsecs->pid & 0xFF;
@@ -135,7 +136,7 @@ void	GetSDTEITInfo(FILE *infile,SECcache *secs,int count)
 				printf("RST\n");
 				break;
 			case 0x24: // BIT
-				//dumpBIT(bsecs->buf,svttop);
+				dumpBIT(bsecs->buf,&maxcycle);
 				break;
 		}
 

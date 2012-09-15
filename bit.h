@@ -45,13 +45,35 @@ typedef struct _SIParameterDescriptor {
     SIParameterTable    sipt[256];
 }SIParameterDescriptor;
 
+typedef struct _HEITCycle {
+  unsigned char num_of_segment;
+  unsigned char cycle;
+}HEITCycle;
+
+typedef struct _HEITParam {
+  unsigned char media_type;
+  unsigned char pattern;
+  unsigned char reserved;
+  unsigned char schedule_range;
+  unsigned char base_cycle;
+  unsigned char reserved2;
+  unsigned char cycle_group_count;
+  HEITCycle cycle[4];
+}HEITParam;
+
+typedef struct	_BroadcasterLoop
+{
+	unsigned char broadcaster_id;
+	short broadcaster_descriptors_length;
+}BroadcasterLoop;
+
 #ifdef __cplusplus
 extern "C"{
 #endif /* __cplusplus */
 
 	int parseBIThead(unsigned char *data, BIThead *h);
 	int parseBITbody(unsigned char *data, BITbody *b);
-	void dumpBIT(unsigned char *data, SVT_CONTROL *top);
+	void dumpBIT(unsigned char *data, int *maxcycle);
 
 #ifdef __cplusplus
 }
