@@ -22,12 +22,13 @@ GRはチャンネル番号の変わりにリモコンIDを出力します。
 epgdump csv  gr32.ts gr32.csv
 epgdump json gr32.ts gr32.json
 
-引数１・csv|json
+引数１・csv|csvc|json
 引数２・TSファイル名
 引数３・出力ファイル名（−で標準出力）
 
 XMLの代わりにCSV形式、JSON形式で出力します。
-引数が3つあり、第一引数がcsv,jsonでない場合xml出力として動作します。
+csvcの場合チャンネル一覧をcsvで出力します。
+引数が3つあり、第一引数が有効でない場合xml出力として動作します。
 
 epgdump check /dev/ptx0.t0 21234 4384 2012-07-15T11:30:00
 
@@ -66,10 +67,10 @@ epgdump wait /dev/ptx0.t0 21234 4384 3600
 ・xml出力変更
 ・番組カテゴリの複数対応
 ・JSON形式出力
+・EITの送出周期が経過したらEXIT
 
 
 TODO
-・番組表が埋まったらEXITする(ストリーム読み込み)
 ・ジャンルコードの取り込み
 ・TOTによる時刻合わせ
 ・CSV廃止?
