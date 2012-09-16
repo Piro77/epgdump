@@ -85,16 +85,24 @@ int     CheckEIT(FILE *infile,SECcache *secs,int count,EITCHECK *chk)
     }
     return 1; // EOF
 }
-void	GetSDTEITInfo(FILE *infile,SECcache *secs,int count)
+int	GetSDTEITInfo(FILE *infile,SECcache *secs,int count)
 {
 	SVT_CONTROL	*svtcur ;
 	int 		pid;
-	SECcache  *bsecs;
-	int		sdtflg;
-	int ret,maxcycle;
+	SECcache	*bsecs;
+	int		sdtflg,numsdt;
+	int		ret,maxcycle;
+	EITCHECK	chk;
 
-	sdtflg=0;
+	memset(&chk,0,sizeof(EITCHECK));
+	sdtflg=numsdt=0;
 	maxcycle=0;
+
+	chk.waitend = time(NULL) + 10;
+
+/*
+XXX BIT¤¬¼è¤ì¤Ê¤¤¤È¤­¤Ï¤É¤¦¤¹¤ë¤«¡©
+*/
 
 	while((bsecs = readTS(infile, secs, count)) != NULL) {
 		pid = bsecs->pid & 0xFF;
@@ -108,12 +116,14 @@ void	GetSDTEITInfo(FILE *infile,SECcache *secs,int count)
 					sdtflg=1;
 					dumpSDT(bsecs->buf, svttop);
 
+					numsdt=0;
 					svtcur = svttop->next;
 					while(svtcur) {
 						if (svtcur->eit == NULL) {
 							svtcur->eit = calloc(1, sizeof(EIT_CONTROL));
 						}
 						svtcur = svtcur->next;
+						numsdt++;
 					}
 
 				}
@@ -127,7 +137,16 @@ void	GetSDTEITInfo(FILE *infile,SECcache *secs,int count)
 				}
 				break;
 			case 0x14: // TDT
-				dumpTDT(bsecs->buf,NULL);
+				dumpTDT(bsecs->buf,&chk);
+				if (chk.starttime > 0  && maxcycle > 0) {
+					if (chk.starttime + maxcycle < chk.tdttime) {
+#ifdef DEBUG
+printf("start %s cycle %d\n",strTime(chk.starttime,"%Y/%m/%d %H:%M:%S"),maxcycle);
+printf("tdt %s\n",strTime(chk.tdttime,"%Y/%m/%d %H:%M:%S"));
+#endif
+						return 0;
+					}
+				}
 				break;
 			case 0x23: // SDTT
 		//		ret = dumpSDTT(bsecs->buf);
@@ -136,11 +155,16 @@ void	GetSDTEITInfo(FILE *infile,SECcache *secs,int count)
 				printf("RST\n");
 				break;
 			case 0x24: // BIT
-				dumpBIT(bsecs->buf,&maxcycle);
+				if (maxcycle == 0 && chk.tdttime > 0) {
+					dumpBIT(bsecs->buf,&maxcycle);
+					chk.starttime = chk.tdttime;
+					maxcycle = maxcycle * 1.2;
+				}
 				break;
 		}
-
+		if (numsdt == 0 && time(NULL) > chk.waitend) return 1;
 	}
+	return 0;
 }
 void	dumpChannel(FILE *outfile)
 {
@@ -558,15 +582,13 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 
-
-
 	svttop = calloc(1, sizeof(SVT_CONTROL));
 
-	GetSDTEITInfo(infile, secs, SECCOUNT);
+	ret = GetSDTEITInfo(infile, secs, SECCOUNT);
 
 	if(strcmp(argv[1], "csv") == 0){
 		dumpCSV(outfile);
-	}else if (strncmp(argv[1], "csvc",4) == 0){
+	}else if (strcmp(argv[1], "csvc") == 0){
 		dumpChannel(outfile);
 	}else if (strcmp(argv[1], "json") == 0){
 		dumpJSON(outfile);
@@ -575,37 +597,6 @@ int main(int argc, char *argv[])
 	}
 	if(inclose) fclose(infile);
 	if(outclose) fclose(outfile);
-#if 0
 
-	for(lp = 0 ; lp < staCount ; lp++){
-		memset(ServiceName, '\0', sizeof(ServiceName));
-		strcpy(ServiceName, pStas[lp].name);
-		xmlspecialchars(ServiceName);
-
-		fprintf(outfile, "  <channel id=\"%s\">\n", pStas[lp].ontv);
-		fprintf(outfile, "    <display-name lang=\"ja_JP\">%s</display-name>\n", ServiceName);
-		fprintf(outfile, "  </channel>\n");
-	}
-	for(lp = 0 ; lp < staCount ; lp++){
-		GetEIT(infile, outfile, &pStas[lp], secs, SECCOUNT);
-	}
-	fprintf(outfile, "</tv>\n");
-	if(inclose) {
-		fclose(infile);
-	}
-
-	if(outclose) {
-		fclose(outfile);
-	}
-	if(act){
-		free(pStas);
-		svtcur = svttop ;	//å…ˆé ­
-		while(svtcur != NULL){
-			svtsave = svtcur->next ;
-			free(svtcur);
-			svtcur = svtsave ;
-		}
-	}
-#endif
-	return 0;
+	return ret;
 }
