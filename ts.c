@@ -8,6 +8,7 @@ static unsigned int CalcCrc(unsigned int crc, unsigned char *buf, int len);
 static int checkcrc(SECcache *secs);
 
 SECcache *readTS(FILE *in, SECcache secs[], int size) {
+	static int chkcount;
 	static int rcount = 0;
 	static int ridx = -1;
 
@@ -22,6 +23,7 @@ SECcache *readTS(FILE *in, SECcache secs[], int size) {
 	int inchar;
 	int i;
 
+	chkcount=0;
 	/* syncバイトまで読み飛ばし */
 	if(rcount == 0) {
 		while((inchar = fgetc(in)) != EOF) {
@@ -114,6 +116,7 @@ retry:
 		}
 		roffset = 0;
 		rcount++;
+		chkcount++;
 
 		if((buf[0] & 0xFF) != 0x47) {
 			/* 最初はbuf中に0x47があるかチェック */
@@ -149,6 +152,13 @@ retry:
 		  printf("aa");
 		  }
 		*/
+		if (chkcount>100000) {
+/* XXX
+不正なデータ等を読み込むとreadTSから処理が帰ってこないのでタイムアウトしない。
+適当なサイズ読み込んでだめなら一度リターンする。
+ */
+			return &(secs[0]); /* 取り合えず戻る */
+		}
 
 
 		pk.rcount = rcount;
