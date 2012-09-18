@@ -22,6 +22,7 @@ struct _EITCHECK {          //イベントチェック用構造体
     time_t  starttime;      // 対象イベント開始時刻(check時のみ設定)
     time_t  tdttime;        // 現在のTDT(wait時の時刻チェック用)
     time_t  waitend;        // 最大待機時間(check時は11秒固定)
+    int     maxcycle;       // BITにあるEIT送出周期で一番大きな値
 };
 
 struct _AUDIODESC {

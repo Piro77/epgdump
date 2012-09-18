@@ -9,6 +9,7 @@
 #include <getopt.h>
 #include <iconv.h>
 #include <time.h>
+#include <signal.h>
 
 #include "ts.h"
 #include "sdt.h"
@@ -29,9 +30,39 @@ char	Category[1024];
 char	*extdesc;
 char	ServiceName[1024];
 
-/* prototype */
-extern int strrep(char *buf, char *mae, char *ato);
+static	EITCHECK	chk;
 
+void signalhandler()
+{
+SVT_CONTROL *svtcur;
+EIT_CONTROL *eitcur;
+int cnt,extcnt,rest;
+	svtcur=svttop->next;
+	while(svtcur != NULL) {
+		if (!svtcur->haveeitschedule) {
+			svtcur = svtcur->next;
+			continue;
+		}
+		cnt=extcnt=rest=0;
+		eitcur = svtcur->eit;
+		while(eitcur != NULL){
+			if(!eitcur->servid){
+				eitcur = eitcur->next ;
+				continue ;
+			}
+			cnt++;
+			if (eitcur->eitextcnt>0) {
+				extcnt++;
+			}
+			eitcur = eitcur->next;
+		}
+		if (chk.starttime > 0 && chk.maxcycle > 0) {
+			rest = chk.starttime + chk.maxcycle - chk.tdttime;
+		}
+		fprintf(stderr,"sid %d programs %d(ext %d) rest %d(%d)\n",svtcur->event_id,cnt,extcnt,rest,chk.maxcycle);
+		svtcur = svtcur->next;
+	}
+}
 void	xmlspecialchars(char *str)
 {
 	strrep(str, "&", "&amp;");
@@ -42,14 +73,14 @@ void	xmlspecialchars(char *str)
 }
 
 
-int     CheckEIT(FILE *infile,SECcache *secs,int count,EITCHECK *chk)
+int     CheckEIT(FILE *infile,SECcache *secs,int count,EITCHECK *echk)
 {
 	SVT_CONTROL	*svtcur ;
 	int 		pid,ret,sdtflg;
 	SECcache  *bsecs;
 
 	svttop = calloc(1, sizeof(SVT_CONTROL));
-    sdtflg = 0;
+	sdtflg = 0;
 
 	while((bsecs = readTS(infile, secs, count)) != NULL) {
 		pid = bsecs->pid & 0xFF;
@@ -68,20 +99,20 @@ int     CheckEIT(FILE *infile,SECcache *secs,int count,EITCHECK *chk)
 				}
 				break;
 			case 0x12: // EIT
-				ret = dumpEIT2(bsecs->buf,svttop,chk);
+				ret = dumpEIT2(bsecs->buf,svttop,echk);
 				if (ret == EIT_CHECKOK || ret == EIT_CHECKNG) { //CHECK COMPLETE
 					return ret - EIT_CHECKOK;
 				}
 				if (ret == EIT_SDTNOTFOUND) sdtflg=0;
 				break;
 			case 0x14: // TDT
-				dumpTDT(bsecs->buf,chk);
+				dumpTDT(bsecs->buf,echk);
 				break;
 			case 0x13: // RST
 				printf("RST\n");
 				break;
         }
-	if (chk->waitend < time(NULL)) {return 1;}
+	if (echk->waitend < time(NULL)) {return 1;}
     }
     return 1; // EOF
 }
@@ -91,14 +122,16 @@ int	GetSDTEITInfo(FILE *infile,SECcache *secs,int count)
 	int 		pid;
 	SECcache	*bsecs;
 	int		sdtflg,numsdt;
-	int		ret,maxcycle;
-	EITCHECK	chk;
+	int		ret;
 
 	memset(&chk,0,sizeof(EITCHECK));
 	sdtflg=numsdt=0;
-	maxcycle=0;
 
 	chk.waitend = time(NULL) + 10;
+
+#ifdef DEBUGSIGNAL
+	signal(SIGINFO,signalhandler);
+#endif
 
 /*
 XXX BIT§¨ºË§Ï§ §§§»§≠§œ§…§¶§π§Î§´°©
@@ -138,10 +171,10 @@ XXX BIT§¨ºË§Ï§ §§§»§≠§œ§…§¶§π§Î§´°©
 				break;
 			case 0x14: // TDT
 				dumpTDT(bsecs->buf,&chk);
-				if (chk.starttime > 0  && maxcycle > 0) {
-					if (chk.starttime + maxcycle < chk.tdttime) {
+				if (chk.starttime > 0  && chk.maxcycle > 0) {
+					if (chk.starttime + chk.maxcycle < chk.tdttime) {
 #ifdef DEBUG
-printf("start %s cycle %d\n",strTime(chk.starttime,"%Y/%m/%d %H:%M:%S"),maxcycle);
+printf("start %s cycle %d\n",strTime(chk.starttime,"%Y/%m/%d %H:%M:%S"),chk.maxcycle);
 printf("tdt %s\n",strTime(chk.tdttime,"%Y/%m/%d %H:%M:%S"));
 #endif
 						return 0;
@@ -155,10 +188,10 @@ printf("tdt %s\n",strTime(chk.tdttime,"%Y/%m/%d %H:%M:%S"));
 				printf("RST\n");
 				break;
 			case 0x24: // BIT
-				if (maxcycle == 0 && chk.tdttime > 0) {
-					dumpBIT(bsecs->buf,&maxcycle);
+				if (chk.maxcycle == 0 && chk.tdttime > 0) {
+					dumpBIT(bsecs->buf,&chk.maxcycle);
 					chk.starttime = chk.tdttime;
-					maxcycle = maxcycle * 1.2;
+					chk.maxcycle = chk.maxcycle * 1.2;
 				}
 				break;
 		}
@@ -513,6 +546,7 @@ int main(int argc, char *argv[])
 	int	ret;
 	SECcache   secs[SECCOUNT];
 
+
 	/* ËààÂë≥„ÅÆ„ÅÇ„Çãpid„ÇíÊåáÂÆö */
 	memset(secs, 0,  sizeof(SECcache) * SECCOUNT);
 	secs[0].pid = 0x11; /* SDT */
@@ -546,7 +580,6 @@ int main(int argc, char *argv[])
 	}
 
 	if(argc == 6 && ((strcmp(argv[1], "check") == 0)||(strcmp(argv[1],"wait"))==0)){
-		EITCHECK chk;
 		memset(&chk,0,sizeof(EITCHECK));
 		chk.svid = atoi(argv[3]);
 		chk.evid = atoi(argv[4]);
