@@ -191,7 +191,11 @@ printf("tdt %s\n",strTime(chk.tdttime,"%Y/%m/%d %H:%M:%S"));
 				if (chk.maxcycle == 0 && chk.tdttime > 0) {
 					dumpBIT(bsecs->buf,&chk.maxcycle);
 					chk.starttime = chk.tdttime;
-					chk.maxcycle = chk.maxcycle * 1.2;
+					/* XXX 環境変数等でオーバーライド可能にしたい
+					 *     周期どおりで基本番組情報は十分だが、拡張のほうは
+					 *     なかなか埋まらない
+					 */
+					chk.maxcycle = chk.maxcycle * 1.6;
 				}
 				break;
 		}

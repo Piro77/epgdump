@@ -116,8 +116,8 @@ int parseSIParameterDescriptor(unsigned char *data, SIParameterDescriptor *d,int
                     basiceitparam[j].media_type = getBit(ptr, &boff, 2);
                     basiceitparam[j].pattern = getBit(ptr, &boff, 2);
                     basiceitparam[j].reserved = getBit(ptr, &boff, 4);
-                    basiceitparam[j].schedule_range = getBit(ptr, &boff, 8);
-                    basiceitparam[j].base_cycle = getBit(ptr, &boff, 12);
+                    basiceitparam[j].schedule_range = getBit(ptr, &boff, 4) *10 + getBit(ptr,&boff,4);
+                    basiceitparam[j].base_cycle = getBit(ptr, &boff, 4) * 100 + getBit(ptr,&boff,4) * 10 + getBit(ptr,&boff,4);
                     if (basiceitparam[j].media_type == 0x01) {
                         if (basiceitparam[j].base_cycle > *maxcycle)
                             *maxcycle = basiceitparam[j].base_cycle;
