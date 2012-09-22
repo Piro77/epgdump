@@ -397,6 +397,7 @@ static char *getAttachInfo(unsigned char cat) {
 		case 0x05: ret = "繰り上げの可能性あり"; break;
 		case 0x10: ret = "中断ニュースあり"; break;
 		case 0x11: ret = "当該イベントに関連する臨時サービスあり"; break;
+		case 0x20: ret = "当該イベント中に3D映像あり"; break;
 		default: ret="";
 	}
 	return ret;
