@@ -276,32 +276,6 @@ int parseEEVTDitem(unsigned char *data, EEVTDitem *desc,EIT_CONTROL *eitcur) {
     tmpbuf = malloc(1024*1024);
     getStr(tmpbuf,data,&boff,desc->item_length);
     printf("desc[%d][%s]\nitem[%d]strlenitem[%d]\n  [%s]\n",desc->item_description_length,desc->item_description,desc->item_length,strlen(tmpbuf),tmpbuf);
-    if (eitcur != NULL )  {
-        if (eitcur->extdesc == NULL) {
-            len = strlen(desc->item_description) + 2 + strlen(tmpbuf);
-            eitcur->extdesc = malloc(len);
-            strcpy(eitcur->extdesc,desc->item_description);
-            strcat(eitcur->extdesc,"　");
-            strcat(eitcur->extdesc,tmpbuf);
-        }
-        else {
-            len = strlen(desc->item_description);
-            if (len == 0) {
-                len = strlen(tmpbuf) + strlen(eitcur->extdesc);
-                eitcur->extdesc = realloc(eitcur->extdesc,len);
-                strcat(eitcur->extdesc,tmpbuf);
-            }
-            else {
-                len = 2 + strlen(desc->item_description) + 2 + strlen(tmpbuf) + strlen(eitcur->extdesc);
-                eitcur->extdesc = realloc(eitcur->extdesc,len);
-                strcat(eitcur->extdesc,"　");
-                strcat(eitcur->extdesc,desc->item_description);
-                strcat(eitcur->extdesc,"　");
-                strcat(eitcur->extdesc,tmpbuf);
-            }
-        }
-        printf(" extdesc[%s]\n",eitcur->extdesc);
-    }
     free(tmpbuf);
 #endif
     return desc->item_description_length + desc->item_length + 2;
@@ -648,8 +622,8 @@ int dumpEIT2(unsigned char *ptr, SVT_CONTROL *svttop,EITCHECK *chk)
                         loop_len -= loop_elen;
 
                         if (cur && cur->eitextcnt == 0 && eevthead.last_descriptor_number > 0) {
-                            cur->eitextcnt = eevthead.last_descriptor_number;
-                            cur->eitextdesc = calloc(cur->eitextcnt+1,sizeof(EITEXTDESC));
+                            cur->eitextcnt = eevthead.last_descriptor_number+1;
+                            cur->eitextdesc = calloc(cur->eitextcnt,sizeof(EITEXTDESC));
                         }
                         while(loop_elen > 0) {
                             len = parseEEVTDitem(ptr, &eevtitem,cur);
