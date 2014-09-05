@@ -134,7 +134,7 @@ int	GetSDTEITInfo(FILE *infile,SECcache *secs,int count)
 #endif
 
 /*
-XXX BIT�����ʤ��Ȥ��Ϥɤ����뤫��
+XXX BITが取れないときはどうするか？
 */
 
 	while((bsecs = readTS(infile, secs, count)) != NULL) {
@@ -182,7 +182,7 @@ printf("tdt %s\n",strTime(chk.tdttime,"%Y/%m/%d %H:%M:%S"));
 				}
 				break;
 			case 0x23: // SDTT
-		//		ret = dumpSDTT(bsecs->buf);
+				ret = dumpSDTT(bsecs->buf);
 				break;
 			case 0x13: // RST
 				printf("RST\n");
@@ -191,10 +191,10 @@ printf("tdt %s\n",strTime(chk.tdttime,"%Y/%m/%d %H:%M:%S"));
 				if (chk.maxcycle == 0 && chk.tdttime > 0) {
 					dumpBIT(bsecs->buf,&chk.maxcycle);
 					chk.starttime = chk.tdttime;
-					/* XXX �Ķ��ѿ����ǥ����С��饤�ɲ�ǽ�ˤ�����
-					 *     �����ɤ���Ǵ������Ⱦ���Ͻ�ʬ��������ĥ�Τۤ���
-					 *     �ʤ��ʤ���ޤ�ʤ�
-					 */
+                                        /* XXX 環境変数等でオーバーライド可能にしたい
+                                         *     周期どおりで基本番組情報は十分だが、拡張のほうは
+                                         *     なかなか埋まらない
+                                         */
 					chk.maxcycle = chk.maxcycle * 1.6;
 				}
 				break;
