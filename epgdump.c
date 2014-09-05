@@ -1,6 +1,4 @@
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
+#include "config.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -182,7 +180,7 @@ printf("tdt %s\n",strTime(chk.tdttime,"%Y/%m/%d %H:%M:%S"));
 				}
 				break;
 			case 0x23: // SDTT
-				ret = dumpSDTT(bsecs->buf);
+			//	ret = dumpSDTT(bsecs->buf);
 				break;
 			case 0x13: // RST
 				printf("RST\n");

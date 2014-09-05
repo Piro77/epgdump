@@ -1,3 +1,5 @@
+version 0.2.1
+	cmakeによるビルドに変更
 version 0.2.0
 	BSCSGR区別をTSファイルから行うようにした。
 	地上はGR+リモコンID(NITから取得)

@@ -2,6 +2,10 @@ epgdump改良版
 
 https://github.com/Piro77/epgdump
 
+ビルドにcmakeが必要
+cmake .(もしくは./autogen.sh)
+make
+
 使い方
 epgdump cs.ts cs.xml
 epgdump bs.ts bs.xml
