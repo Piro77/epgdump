@@ -11,7 +11,7 @@ epgdump cs.ts cs.xml
 epgdump bs.ts bs.xml
 epgdump gr32.ts gr32.xml
 
-引数１・TSファイル名
+引数１・TSファイル名(-で標準入力)
 引数２・出力XMLファイル名（−で標準出力）
 
 TSを読み込んでxmlを出力します。xmlの形式は独自なので他のepgdump
@@ -23,11 +23,16 @@ GRはチャンネル番号の変わりにリモコンIDを出力します。
    BS_237
    GR2_23122
 
+recpt1 CHANNEL - - | epgdump - -
+のようにrecpt1からの出力をパイプでつなぐこともできます。
+epgの読出し時間はEIT送出サイクルよりちょっと長めに取得
+（ファイルの場合も同様）
+
 epgdump csv  gr32.ts gr32.csv
 epgdump json gr32.ts gr32.json
 
 引数１・csv|csvc|json
-引数２・TSファイル名
+引数２・TSファイル名(-で標準入力)
 引数３・出力ファイル名（−で標準出力）
 
 XMLの代わりにCSV形式、JSON形式で出力します。
@@ -37,7 +42,7 @@ csvcの場合チャンネル一覧をcsvで出力します。
 epgdump check /dev/ptx0.t0 21234 4384 2012-07-15T11:30:00
 
 引数１・check(固定)
-引数２・デバイス名
+引数２・デバイス名(-で標準入力)
 引数３・EITサービスID
 引数４・EITイベントID
 引数５・EITイベント開始時刻
@@ -52,7 +57,7 @@ EIT情報が取得できない場合等含めて最長約１０秒で終了し�
 epgdump wait /dev/ptx0.t0 21234 4384 3600
 
 引数１・wait(固定)
-引数２・デバイス名
+引数２・デバイス名(-で標準入力)
 引数３・EITサービスID
 引数４・EITイベントID
 引数５・最大待ち秒数
@@ -60,6 +65,16 @@ epgdump wait /dev/ptx0.t0 21234 4384 3600
 デバイスからTSを読み出し、引数で渡されたサービスIDのイベントIDの開始を待機します。
 待機が成功した場合０で終了します。(該当イベントの開始、または約３０秒で開始）
 待機が失敗した場合１で終了します
+
+epgdump passthru /dev/ptx0.t0 21234 4384 3600 recordfile
+recpt1 CHANNEL - - | epgdump passthru -  21234 4384 3600 recordfile
+
+引数１・passthru(固定)
+引数２～５・waitと同様
+引数６・出力ファイル名
+
+waitと同様に待機し、開始したイベントを出力ファイルに出力します。
+当該イベント終了時または最大待機時間が過ぎると終了します。
 
 
 変更点

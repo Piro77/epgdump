@@ -530,9 +530,12 @@ int dumpEIT2(unsigned char *ptr, SVT_CONTROL *svttop,EITCHECK *chk)
                             }
                         }
                         if (chk->starttime > 0 && svtcur->event_id == chk->svid && svtcur->cnev[1].event_id>0) {
-                            //次のイベント情報を取得してもマッチしていない
+                            //check処理で次のイベント情報を取得してもマッチしていない
                             return EIT_CHECKNG;
                         }
+			if (chk->passthru == 3 && eith.section_number == 0 && svtcur->event_id == chk->svid && svtcur->cnev[0].event_id != chk->evid) {
+				return EIT_CHECKNG;
+			}
                     } //event changed
                     else {
                         if  ((svtcur->event_id == chk->svid) && (svtcur->cnev[1].event_id == chk->evid)) {
@@ -542,6 +545,13 @@ int dumpEIT2(unsigned char *ptr, SVT_CONTROL *svttop,EITCHECK *chk)
                                 }
                             }
                         }
+			/*
+                        printf("sv2[%d]%s [%d] [%s][%d] state %x\n",svtcur->event_id,eith.section_number?"next":"curr",
+                                eitb.event_id,
+                                strTime(getStartTime(eitb.start_time),"%Y/%m/%d %H:%M:%S"),
+                                getDurationSec(eitb.duration),
+                                eitb.running_status);
+		    */
                     }
                 }
             }

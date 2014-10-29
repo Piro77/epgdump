@@ -37,7 +37,7 @@ typedef struct _SECcache {
 extern "C"{
 #endif /* __cplusplus */
 
-	SECcache *readTS(FILE *in, SECcache secs[], int secscount);
+	SECcache *readTS(FILE *in, SECcache secs[], int secscount, FILE *pfp);
 
 #ifdef __cplusplus
 }

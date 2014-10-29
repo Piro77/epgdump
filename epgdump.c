@@ -76,11 +76,13 @@ int     CheckEIT(FILE *infile,SECcache *secs,int count,EITCHECK *echk)
 	SVT_CONTROL	*svtcur ;
 	int 		pid,ret,sdtflg;
 	SECcache  *bsecs;
+	FILE *pfp;
 
 	svttop = calloc(1, sizeof(SVT_CONTROL));
 	sdtflg = 0;
+	pfp = NULL;
 
-	while((bsecs = readTS(infile, secs, count)) != NULL) {
+	while((bsecs = readTS(infile, secs, count, pfp)) != NULL) {
 		pid = bsecs->pid & 0xFF;
 		switch (pid) {
 			case 0x11: //SDT
@@ -98,8 +100,33 @@ int     CheckEIT(FILE *infile,SECcache *secs,int count,EITCHECK *echk)
 				break;
 			case 0x12: // EIT
 				ret = dumpEIT2(bsecs->buf,svttop,echk);
-				if (ret == EIT_CHECKOK || ret == EIT_CHECKNG) { //CHECK COMPLETE
+				if (echk->passthru == 0 &&
+				(ret == EIT_CHECKOK || ret == EIT_CHECKNG)) { //CHECK COMPLETE
 					return ret - EIT_CHECKOK;
+				}
+				if ((echk->passthru & 1)==1) {
+					if (ret == EIT_CHECKNG) {
+						if (pfp == NULL) {
+							// 失敗
+							return 1;
+						}
+						else {
+							//番組終了
+							fclose(pfp);
+							return 0;
+						}
+					}
+					if (pfp == NULL && ret == EIT_CHECKOK) {
+						// 番組開始
+						pfp = fopen(echk->fileout,"w");
+						printf("open %s\n",echk->fileout);
+						if (pfp == NULL) {
+							// 録画ファイル作成失敗
+							return 2;
+						}
+						echk->waitend = time(NULL)+86400;
+						echk->passthru = 3;
+					}
 				}
 				if (ret == EIT_SDTNOTFOUND) sdtflg=0;
 				break;
@@ -110,8 +137,11 @@ int     CheckEIT(FILE *infile,SECcache *secs,int count,EITCHECK *echk)
 				printf("RST\n");
 				break;
         }
-	if (echk->waitend < time(NULL)) {return 1;}
+	if ((pfp == NULL) && (echk->waitend < time(NULL))) {
+		break;
+	}
     }
+    if (pfp) fclose(pfp);
     return 1; // EOF
 }
 int	GetSDTEITInfo(FILE *infile,SECcache *secs,int count)
@@ -135,7 +165,7 @@ int	GetSDTEITInfo(FILE *infile,SECcache *secs,int count)
 XXX BITが取れないときはどうするか？
 */
 
-	while((bsecs = readTS(infile, secs, count)) != NULL) {
+	while((bsecs = readTS(infile, secs, count, NULL)) != NULL) {
 		pid = bsecs->pid & 0xFF;
 		switch (pid) {
 			case 0x10:  //NIT
@@ -595,6 +625,17 @@ int main(int argc, char *argv[])
 		ret = CheckEIT(infile,secs, SECCOUNT,&chk);
 		if (inclose) fclose(infile);
 		// 0..ok 1..fail
+		return ret;
+	}
+	if(argc == 7 && ((strcmp(argv[1], "passthru") == 0))){
+		memset(&chk,0,sizeof(EITCHECK));
+		chk.svid = atoi(argv[3]);
+		chk.evid = atoi(argv[4]);
+		chk.waitend = time(NULL) + atoi(argv[5]);
+		chk.passthru = 1;
+		chk.fileout = argv[6];
+		ret = CheckEIT(infile,secs, SECCOUNT,&chk);
+		if (inclose) fclose(infile);
 		return ret;
 	}
 

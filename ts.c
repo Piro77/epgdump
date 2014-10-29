@@ -7,7 +7,7 @@
 static unsigned int CalcCrc(unsigned int crc, unsigned char *buf, int len);
 static int checkcrc(SECcache *secs);
 
-SECcache *readTS(FILE *in, SECcache secs[], int size) {
+SECcache *readTS(FILE *in, SECcache secs[], int size, FILE *pfp) {
 	static int chkcount;
 	static int rcount = 0;
 	static int ridx = -1;
@@ -113,6 +113,9 @@ retry:
 		if(fread(buf+roffset, 188-roffset, 1, in) != 1) {
 			/* 残りの処理? */
 			return NULL;
+		}
+		if (pfp) {
+			fwrite(buf+roffset,188-roffset,1,pfp);
 		}
 		roffset = 0;
 		rcount++;

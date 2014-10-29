@@ -23,6 +23,8 @@ struct _EITCHECK {          //イベントチェック用構造体
     time_t  tdttime;        // 現在のTDT(wait時の時刻チェック用)
     time_t  waitend;        // 最大待機時間(check時は11秒固定)
     int     maxcycle;       // BITにあるEIT送出周期で一番大きな値
+    int     passthru;       // パススルーモード 1..パススルー 3..パススルー開始 0..通常チェック
+    char    *fileout;       // パススルー出力ファイル名
 };
 
 struct _AUDIODESC {
