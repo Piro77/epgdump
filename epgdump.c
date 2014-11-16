@@ -650,10 +650,12 @@ int main(int argc, char *argv[])
 		fprintf(stdout, "Usage : %s json <tsFile> <outfile>\n", argv[0]);
 		fprintf(stdout, "Usage : %s check <device> <sid> <eventid> <eventtime>\n", argv[0]);
 		fprintf(stdout, "Usage : %s wait <device> <sid> <eventid> <maxwaitsec>\n", argv[0]);
+		fprintf(stdout, "Usage : %s passthru <device> <sid> <eventid> <maxwaitsec> <outfile>\n", argv[0]);
 		fprintf(stdout, "  csv        csv  output mode\n");
 		fprintf(stdout, "  json       json output mode\n");
 		fprintf(stdout, "  check      check event\n");
 		fprintf(stdout, "  wait       wait  event\n");
+		fprintf(stdout, "  passthru   wait  event and passthru input to outfile\n");
 		fprintf(stdout, "VERSION : %s\n",VERSION);
 		return 0;
 	}
