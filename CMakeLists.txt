@@ -8,7 +8,7 @@ include(CheckSymbolExists)
 
 PROJECT(epgdump)
 
-SET(serial "0.2.1")
+SET(serial "0.2.2")
 
 find_package (Iconv REQUIRED)
 IF( ICONV_FOUND )

@@ -25,6 +25,7 @@ struct _EITCHECK {          //イベントチェック用構造体
     int     maxcycle;       // BITにあるEIT送出周期で一番大きな値
     int     passthru;       // パススルーモード 1..パススルー 3..パススルー開始 0..通常チェック
     char    *fileout;       // パススルー出力ファイル名
+    int     tdtdiff;        // tdt更新間隔
 };
 
 struct _AUDIODESC {

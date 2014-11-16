@@ -539,8 +539,10 @@ int dumpEIT2(unsigned char *ptr, SVT_CONTROL *svttop,EITCHECK *chk)
                     } //event changed
                     else {
                         if  ((svtcur->event_id == chk->svid) && (svtcur->cnev[1].event_id == chk->evid)) {
-                            if (chk->tdttime > 0) { // TDT時刻とチェックして35秒以内ならOK
-                                if (getStartTime(svtcur->cnev[1].start_time) < chk->tdttime + 35) {
+                            if (chk->tdttime > 0) {
+				// TDT時刻とチェックしてTDT間隔+1秒以内ならOK
+				// 運用規定だと5秒なので間隔を取得するのはいらないのかも..
+                                if (getStartTime(svtcur->cnev[1].start_time) < (chk->tdttime + chk->tdtdiff+1)) {
                                     return EIT_CHECKOK;
                                 }
                             }
