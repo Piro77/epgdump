@@ -485,8 +485,8 @@ void dumpJSON(FILE *outfile)
 			}
 			fprintf(outfile,"],");
 
-			fprintf(outfile,"\"start\":%d0000,",eitcur->start_time);
-			fprintf(outfile,"\"end\":%d0000,",eitcur->start_time+eitcur->duration);
+			fprintf(outfile,"\"start\":%d000,",eitcur->start_time);
+			fprintf(outfile,"\"end\":%d000,",eitcur->start_time+eitcur->duration);
 			fprintf(outfile,"\"duration\":%d,",eitcur->duration);
 
 			eitextcanma="";
